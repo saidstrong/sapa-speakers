@@ -123,24 +123,34 @@ export default async function VolunteerDetailPage({
 
         <Section title="Связанная заявка">
           {volunteer.application ? (
-            <dl className="grid gap-5 md:grid-cols-2">
-              <DetailItem label="ФИО в заявке" value={volunteer.application.full_name} />
-              <DetailItem
-                label="Статус заявки"
-                value={<ApplicationStatusBadge status={volunteer.application.status} />}
-              />
-              <DetailItem label="Мотивация" value={volunteer.application.motivation} />
-              <DetailItem label="Опыт" value={volunteer.application.experience} />
-              <DetailItem label="Доступность" value={volunteer.application.availability} />
-              <DetailItem
-                label="Дата решения"
-                value={formatDate(volunteer.application.reviewed_at)}
-              />
-              <DetailItem
-                label="Комментарий ревьюера"
-                value={volunteer.application.reviewer_notes}
-              />
-            </dl>
+            <div className="grid gap-5">
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  className="rounded-md border border-oxford/15 bg-white px-4 py-2 text-sm font-semibold text-oxford transition hover:border-orange/40 hover:text-orange"
+                  href={`/admin/team-applications/${volunteer.application.id}`}
+                >
+                  Открыть заявку
+                </Link>
+              </div>
+              <dl className="grid gap-5 md:grid-cols-2">
+                <DetailItem label="ФИО в заявке" value={volunteer.application.full_name} />
+                <DetailItem
+                  label="Статус заявки"
+                  value={<ApplicationStatusBadge status={volunteer.application.status} />}
+                />
+                <DetailItem label="Мотивация" value={volunteer.application.motivation} />
+                <DetailItem label="Опыт" value={volunteer.application.experience} />
+                <DetailItem label="Доступность" value={volunteer.application.availability} />
+                <DetailItem
+                  label="Дата решения"
+                  value={formatDate(volunteer.application.reviewed_at)}
+                />
+                <DetailItem
+                  label="Комментарий ревьюера"
+                  value={volunteer.application.reviewer_notes}
+                />
+              </dl>
+            </div>
           ) : (
             <p className="text-sm leading-6 text-muted">
               Связанная заявка не указана. Карточка может быть создана вручную или
@@ -181,6 +191,10 @@ export default async function VolunteerDetailPage({
             >
               Сохранить карточку
             </button>
+            <p className="text-sm leading-6 text-muted md:col-span-2">
+              Здесь можно изменить только операционный статус и внутренние заметки.
+              Роль профиля и данные заявки остаются без изменений.
+            </p>
           </form>
         </Section>
       </div>

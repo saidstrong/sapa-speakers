@@ -129,6 +129,19 @@ Phase 2B allows updating only:
 
 Role management, project assignment, attendance, certificates, achievements, public volunteer profiles, notifications, and audit logs are intentionally not included in this phase.
 
+## Phase 2B Manual QA Checklist
+
+1. Submit a test volunteer application through `/join` or use an existing pending application.
+2. In a separate account, register the same email if you want approval to create a linked volunteer card immediately.
+3. Sign in as an admin-capable user and open `/admin/team-applications`.
+4. Approve the application and confirm the result message matches the actual case: either the volunteer card is created or already exists, or the application is approved but the applicant still needs to register with the same email.
+5. Open `/admin/volunteers` and confirm the approved volunteer appears in the directory.
+6. Open the volunteer detail page and verify profile data, volunteer status, joined date, notes, and linked application context.
+7. Change the volunteer status and save; confirm the success message appears and the updated badge/value is visible after reload.
+8. Update the volunteer notes and save; confirm the success message appears and the notes persist after reload.
+9. Trigger at least one invalid update case if possible, and confirm the error message is shown without exposing internal details.
+10. Sign in as a non-admin user and confirm `/admin/volunteers` and `/admin/volunteers/[id]` remain blocked by admin route protection.
+
 ## Testing The Public Application Form
 
 1. Apply the migration in Supabase.
