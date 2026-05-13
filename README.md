@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 2A: admin review workflow for public volunteer applications.
+Phase 2B: admin volunteer directory and volunteer detail surface.
 
 This phase includes:
 
@@ -56,6 +56,9 @@ This phase includes:
 - anonymous insert into Supabase through RLS
 - admin listing and detail review pages for public volunteer applications
 - server-side approve/decline actions for admin-capable roles
+- admin volunteer directory for approved/linked volunteer records
+- volunteer detail page with profile, operational status, notes, and linked application context
+- server-side volunteer status/notes update action for admin-capable roles
 
 Role assignment UI, project applications, attendance, certificates, achievements, storage, notifications, and audit logs are intentionally not implemented yet.
 
@@ -108,6 +111,23 @@ http://localhost:3000/admin/team-applications
 The page lists applications submitted through `/join`. A reviewer can open a detail page, approve the application, or decline it. Approval marks the application as `approved`.
 
 If a registered profile already exists with the same email, approval creates or updates one `public.volunteers` row for that profile and links it to the application. If no profile exists yet, the application remains approved, but the volunteer record waits until the applicant registers with the same email.
+
+## Managing Volunteer Records
+
+Admin-capable users can open:
+
+```text
+http://localhost:3000/admin/volunteers
+```
+
+The page lists existing `public.volunteers` records created through the approved application flow. A reviewer can open a volunteer detail page to see profile contact fields, the profile role label, volunteer status, joined date, notes, and linked public application context.
+
+Phase 2B allows updating only:
+
+- volunteer status: `active`, `inactive`, `suspended`, `alumni`
+- volunteer notes
+
+Role management, project assignment, attendance, certificates, achievements, public volunteer profiles, notifications, and audit logs are intentionally not included in this phase.
 
 ## Testing The Public Application Form
 
