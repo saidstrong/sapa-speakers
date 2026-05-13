@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 1B: Supabase Auth foundation, profiles/volunteers schema, and protected route shells.
+Phase 2A: admin review workflow for public volunteer applications.
 
 This phase includes:
 
@@ -49,13 +49,15 @@ This phase includes:
 - public `volunteer_applications` intake from Phase 1A
 - Supabase Auth login/register/logout
 - automatic `profiles` creation after auth signup
-- `volunteers` table for future approved volunteers
+- `volunteers` table for approved applicants with matching profiles
 - server-side protection for `/app/*` and `/admin/*`
 - public `/join` application form
 - server-side Zod validation
 - anonymous insert into Supabase through RLS
+- admin listing and detail review pages for public volunteer applications
+- server-side approve/decline actions for admin-capable roles
 
-Application approval, role assignment UI, project applications, attendance, certificates, achievements, storage, and audit logs are intentionally not implemented yet.
+Role assignment UI, project applications, attendance, certificates, achievements, storage, notifications, and audit logs are intentionally not implemented yet.
 
 ## Supabase Migration
 
@@ -70,9 +72,10 @@ Migration file:
 ```text
 supabase/migrations/0001_volunteer_applications.sql
 supabase/migrations/0002_profiles_volunteers.sql
+supabase/migrations/0003_volunteer_application_review.sql
 ```
 
-The migrations create `public.volunteer_applications`, `public.profiles`, and `public.volunteers`, enable RLS, and keep anonymous users away from private profile/volunteer data.
+The migrations create `public.volunteer_applications`, `public.profiles`, and `public.volunteers`, enable RLS, keep anonymous users away from private profile/volunteer data, and allow admin-capable authenticated users to review public volunteer applications.
 
 ## Auth Setup Notes
 
@@ -82,7 +85,7 @@ In Supabase Auth settings, set the local site URL to:
 http://localhost:3000
 ```
 
-New auth users get a `public.profiles` row from the database trigger in `0002_profiles_volunteers.sql`. The default role is `volunteer`. A `public.volunteers` row is not created automatically yet; it will be created later after an application approval workflow exists.
+New auth users get a `public.profiles` row from the database trigger in `0002_profiles_volunteers.sql`. The default role is `volunteer`. A `public.volunteers` row is not created at registration time; Phase 2A creates it only when an admin approves a public volunteer application and a matching profile exists.
 
 To promote the first admin manually in Supabase SQL Editor:
 
@@ -93,6 +96,18 @@ where email = 'your-founder-email@example.com';
 ```
 
 Use your own founder email placeholder value; do not commit real personal emails.
+
+## Reviewing Public Volunteer Applications
+
+Admin-capable users can open:
+
+```text
+http://localhost:3000/admin/team-applications
+```
+
+The page lists applications submitted through `/join`. A reviewer can open a detail page, approve the application, or decline it. Approval marks the application as `approved`.
+
+If a registered profile already exists with the same email, approval creates or updates one `public.volunteers` row for that profile and links it to the application. If no profile exists yet, the application remains approved, but the volunteer record waits until the applicant registers with the same email.
 
 ## Testing The Public Application Form
 
