@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 3A: events/projects foundation for admin-managed organization activities.
+Phase 3B: volunteer-facing read-only published events/projects.
 
 This phase includes:
 
@@ -62,8 +62,10 @@ This phase includes:
 - internal `events` table with admin-only RLS
 - admin event/project list, create, detail, and edit pages
 - server-side event create/update actions for admin-capable roles
+- volunteer-facing published event/project list and detail pages
+- authenticated read access to published events through RLS
 
-Role assignment UI, public event pages, volunteer event signup, attendance, certificates, achievements, storage, notifications, and audit logs are intentionally not implemented yet.
+Role assignment UI, public event pages, volunteer event signup, attendance, project applications, certificates, achievements, storage, notifications, and audit logs are intentionally not implemented yet.
 
 ## Supabase Migration
 
@@ -80,9 +82,11 @@ supabase/migrations/0001_volunteer_applications.sql
 supabase/migrations/0002_profiles_volunteers.sql
 supabase/migrations/0003_volunteer_application_review.sql
 supabase/migrations/0004_events_foundation.sql
+supabase/migrations/0005_fix_events_grants.sql
+supabase/migrations/0006_published_events_app_access.sql
 ```
 
-The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, and `public.events`, enable RLS, keep anonymous users away from private profile/volunteer/event data, and allow admin-capable authenticated users to review public volunteer applications and manage internal events.
+The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, and `public.events`, enable RLS, keep anonymous users away from private profile/volunteer/event data, allow admin-capable authenticated users to review public volunteer applications and manage internal events, and allow authenticated volunteers to view only published events.
 
 ## Auth Setup Notes
 
@@ -151,6 +155,18 @@ Phase 3A adds the first internal event/project management surface. Admins can cr
 - capacity
 
 This phase does not include public event pages, volunteer event registration, RSVP, attendance tracking, project applications, deletion, or analytics.
+
+## Viewing Published Events As A Volunteer
+
+Authenticated volunteers can open:
+
+```text
+http://localhost:3000/app/projects
+```
+
+The page lists only events with status `published`. Volunteers can open a detail page to view the title, description, location, start/end time, capacity, and status.
+
+Phase 3B is read-only. Project applications, registration, RSVP, attendance, certificates, and notifications are intentionally deferred to later phases.
 
 ## Phase 2B Manual QA Checklist
 
