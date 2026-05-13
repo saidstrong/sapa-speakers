@@ -8,15 +8,16 @@ import { cn } from "@/lib/utils";
 type SidebarProps = {
   items: readonly SidebarItem[];
   title: string;
+  homeHref?: string;
 };
 
-export function Sidebar({ items, title }: SidebarProps) {
+export function Sidebar({ items, title, homeHref = "/app" }: SidebarProps) {
   const pathname = usePathname();
 
   return (
     <aside className="w-full border-b border-white/10 bg-oxford text-white md:min-h-screen md:w-72 md:border-b-0 md:border-r">
       <div className="p-5">
-        <Link href="/app" className="block text-xl font-bold">
+        <Link href={homeHref} className="block text-xl font-bold">
           SapaSpeakers
         </Link>
         <p className="mt-1 text-xs text-white/60">{title}</p>

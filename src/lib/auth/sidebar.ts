@@ -150,3 +150,7 @@ export function getSidebarItemsForRoles(
     (item) => item.zone === zone && canAccessSidebarItem(roleKeys, item)
   );
 }
+
+export function getSidebarItemsForRole(role: RoleKey, zone: SidebarZone) {
+  return getSidebarItemsForRoles([role], zone);
+}

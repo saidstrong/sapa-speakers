@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAnonymousServerClient } from "@/lib/supabase/server";
 import {
   getVolunteerApplicationValidationMessage,
   volunteerApplicationSchema
@@ -42,10 +42,10 @@ export async function submitVolunteerApplication(formData: FormData) {
     );
   }
 
-  let supabase: ReturnType<typeof createSupabaseServerClient> | null = null;
+  let supabase: ReturnType<typeof createSupabaseAnonymousServerClient> | null = null;
 
   try {
-    supabase = createSupabaseServerClient();
+    supabase = createSupabaseAnonymousServerClient();
   } catch (error) {
     console.error("Supabase environment is not configured", error);
     redirectWithStatus(

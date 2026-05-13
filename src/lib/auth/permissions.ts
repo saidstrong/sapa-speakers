@@ -152,3 +152,7 @@ export function getPermissionsForRoles(roles: readonly RoleKey[]) {
 export function hasPermission(roles: readonly RoleKey[], permission: PermissionKey) {
   return getPermissionsForRoles(roles).has(permission);
 }
+
+export function hasAdminAccess(roles: readonly RoleKey[]) {
+  return hasPermission(roles, "view_admin");
+}

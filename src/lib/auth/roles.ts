@@ -27,6 +27,10 @@ export type RoleDefinition = {
 
 export const protectedRoleKeys = ["founder_ceo", "cto"] as const satisfies readonly RoleKey[];
 
+export const adminRoleKeys = roleKeys.filter(
+  (role) => role !== "volunteer"
+) as Exclude<RoleKey, "volunteer">[];
+
 export const roles: Record<RoleKey, RoleDefinition> = {
   founder_ceo: {
     key: "founder_ceo",
@@ -106,4 +110,12 @@ export function getRoleLabel(role: RoleKey) {
 
 export function isProtectedRole(role: RoleKey) {
   return roles[role].protected;
+}
+
+export function isRoleKey(value: unknown): value is RoleKey {
+  return typeof value === "string" && roleKeys.includes(value as RoleKey);
+}
+
+export function isAdminRole(role: RoleKey | null | undefined) {
+  return Boolean(role && adminRoleKeys.includes(role as Exclude<RoleKey, "volunteer">));
 }

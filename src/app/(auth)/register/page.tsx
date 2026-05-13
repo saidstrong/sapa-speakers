@@ -1,27 +1,98 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
+import { getCurrentUser } from "@/lib/auth/current-user";
 import { RU } from "@/lib/constants/ru";
+import { register } from "./actions";
 
-const fields = ["Имя", "Фамилия", "Email", "Телефон", "Пароль", "Повторите пароль"];
+type RegisterPageProps = {
+  searchParams?: Promise<{
+    status?: string;
+    message?: string;
+  }>;
+};
 
-export default function RegisterPage() {
+export default async function RegisterPage({ searchParams }: RegisterPageProps) {
+  const currentUser = await getCurrentUser();
+
+  if (currentUser.user) {
+    redirect("/app");
+  }
+
+  const params = await searchParams;
+
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-5 py-10">
       <PageHeader title={RU.pages.register.title} description={RU.pages.register.description} />
-      <form className="grid gap-4 rounded-lg border border-oxford/10 bg-white p-6 shadow-sm md:grid-cols-2">
-        {fields.map((field) => (
-          <label key={field} className="block text-sm font-semibold text-oxford">
-            {field}
-            <input
-              className="mt-2 w-full rounded-md border border-oxford/15 px-3 py-2"
-              type={field.includes("Пароль") ? "password" : field === "Email" ? "email" : "text"}
-              placeholder={field}
-            />
-          </label>
-        ))}
+      {params?.status ? (
+        <div
+          className={
+            params.status === "success"
+              ? "mb-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-medium text-green-700"
+              : "mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700"
+          }
+        >
+          {params.message ??
+            (params.status === "success"
+              ? "Регистрация принята."
+              : "Не удалось создать аккаунт.")}
+        </div>
+      ) : null}
+      <form action={register} className="grid gap-4 rounded-lg border border-oxford/10 bg-white p-6 shadow-sm md:grid-cols-2">
+        <label className="block text-sm font-semibold text-oxford md:col-span-2">
+          ФИО
+          <input
+            className="mt-2 w-full rounded-md border border-oxford/15 px-3 py-2"
+            name="full_name"
+            placeholder="Имя и фамилия"
+            required
+            type="text"
+          />
+        </label>
+        <label className="block text-sm font-semibold text-oxford">
+          Email
+          <input
+            className="mt-2 w-full rounded-md border border-oxford/15 px-3 py-2"
+            name="email"
+            placeholder="name@example.com"
+            required
+            type="email"
+          />
+        </label>
+        <label className="block text-sm font-semibold text-oxford">
+          Телефон
+          <input
+            className="mt-2 w-full rounded-md border border-oxford/15 px-3 py-2"
+            name="phone"
+            placeholder="+7..."
+            type="tel"
+          />
+        </label>
+        <label className="block text-sm font-semibold text-oxford">
+          Пароль
+          <input
+            className="mt-2 w-full rounded-md border border-oxford/15 px-3 py-2"
+            minLength={8}
+            name="password"
+            placeholder="Минимум 8 символов"
+            required
+            type="password"
+          />
+        </label>
+        <label className="block text-sm font-semibold text-oxford">
+          Повторите пароль
+          <input
+            className="mt-2 w-full rounded-md border border-oxford/15 px-3 py-2"
+            minLength={8}
+            name="password_confirm"
+            placeholder="Повторите пароль"
+            required
+            type="password"
+          />
+        </label>
         <button
           className="rounded-md bg-orange px-4 py-2 font-semibold text-oxford md:col-span-2"
-          type="button"
+          type="submit"
         >
           {RU.buttons.register}
         </button>
