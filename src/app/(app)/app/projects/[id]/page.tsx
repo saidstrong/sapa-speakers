@@ -1,11 +1,18 @@
 import Link from "next/link";
+import { EventRegistrationPanel } from "@/components/events/event-registration-panel";
 import { EventStatusBadge } from "@/components/events/event-status-badge";
 import { PageHeader } from "@/components/ui/page-header";
+import { getCurrentEventRegistrationState } from "@/lib/queries/event-registrations";
 import { getPublishedEvent } from "@/lib/queries/published-events";
+import { cancelEventRegistration, registerForEvent } from "./actions";
 
 type ProjectDetailPageProps = {
   params: Promise<{
     id: string;
+  }>;
+  searchParams?: Promise<{
+    type?: string;
+    message?: string;
   }>;
 };
 
@@ -39,9 +46,18 @@ function DetailItem({
   );
 }
 
-export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
+export default async function ProjectDetailPage({
+  params,
+  searchParams
+}: ProjectDetailPageProps) {
   const { id } = await params;
-  const event = await getPublishedEvent(id);
+  const result = await searchParams;
+  const [event, registrationState] = await Promise.all([
+    getPublishedEvent(id),
+    getCurrentEventRegistrationState(id)
+  ]);
+  const registerAction = registerForEvent.bind(null, event.id);
+  const cancelAction = cancelEventRegistration.bind(null, event.id);
 
   return (
     <>
@@ -83,9 +99,14 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           </dl>
         </section>
 
-        <section className="rounded-lg border border-vista/40 bg-vista/15 p-4 text-sm leading-6 text-oxford">
-          Запись на проект будет добавлена в следующем этапе.
-        </section>
+        <EventRegistrationPanel
+          cancelAction={cancelAction}
+          capacity={event.capacity}
+          registeredCount={registrationState.registeredCount}
+          registrationState={registrationState}
+          registerAction={registerAction}
+          result={result}
+        />
       </div>
     </>
   );

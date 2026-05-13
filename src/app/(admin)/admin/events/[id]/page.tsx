@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { EventRegistrationList } from "@/components/events/event-registration-list";
 import { EventStatusBadge } from "@/components/events/event-status-badge";
 import { PageHeader } from "@/components/ui/page-header";
+import { listEventRegistrationsForAdmin } from "@/lib/queries/event-registrations";
 import { getEventDetail } from "@/lib/queries/events";
 
 type EventDetailPageProps = {
@@ -64,7 +66,10 @@ export default async function EventDetailPage({
 }: EventDetailPageProps) {
   const { id } = await params;
   const result = await searchParams;
-  const event = await getEventDetail(id);
+  const [event, registrations] = await Promise.all([
+    getEventDetail(id),
+    listEventRegistrationsForAdmin(id)
+  ]);
 
   return (
     <>
@@ -134,9 +139,13 @@ export default async function EventDetailPage({
           </dl>
         </Section>
 
+        <Section title="Участники">
+          <EventRegistrationList registrations={registrations} />
+        </Section>
+
         <section className="rounded-lg border border-vista/40 bg-vista/15 p-4 text-sm leading-6 text-oxford">
-          Регистрация волонтёров, посещаемость и публичные страницы событий не входят в
-          Phase 3A.
+          Посещаемость, волонтёрские часы, сертификаты и достижения не входят в Phase
+          3C.
         </section>
       </div>
     </>
