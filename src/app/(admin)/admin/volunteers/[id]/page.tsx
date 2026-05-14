@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { ApplicationStatusBadge } from "@/components/applications/application-status-badge";
+import { ContributionHistoryTable } from "@/components/contributions/contribution-history-table";
+import { ContributionSummaryCard } from "@/components/contributions/contribution-summary-card";
 import { PageHeader } from "@/components/ui/page-header";
 import {
   VolunteerStatusBadge,
   volunteerStatusLabels
 } from "@/components/volunteers/volunteer-status-badge";
 import { getRoleLabel } from "@/lib/auth/roles";
+import { getVolunteerContributionHistoryForAdmin } from "@/lib/queries/contributions";
 import { getVolunteerDetail, volunteerStatuses } from "@/lib/queries/volunteers";
 import { updateVolunteer } from "./actions";
 
@@ -66,7 +69,10 @@ export default async function VolunteerDetailPage({
 }: VolunteerDetailPageProps) {
   const { id } = await params;
   const result = await searchParams;
-  const volunteer = await getVolunteerDetail(id);
+  const [volunteer, contributionHistory] = await Promise.all([
+    getVolunteerDetail(id),
+    getVolunteerContributionHistoryForAdmin(id)
+  ]);
   const updateAction = updateVolunteer.bind(null, volunteer.id);
 
   return (
@@ -120,6 +126,25 @@ export default async function VolunteerDetailPage({
             <DetailItem label="Заметки" value={volunteer.notes} />
           </dl>
         </Section>
+
+        <section className="grid gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-oxford">Вклад волонтёра</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+              Подтверждённые часы и история вклада. Добавление и обновление часов
+              выполняется из реестра посещаемости.
+            </p>
+          </div>
+          <ContributionSummaryCard summary={contributionHistory.summary} />
+          <ContributionHistoryTable
+            contributions={contributionHistory.contributions}
+            emptyDescription="У этого волонтёра пока нет записанного вклада."
+            emptyTitle="История вклада"
+            showAdminColumns
+            showSummary={false}
+            totalHours={contributionHistory.summary.totalHours}
+          />
+        </section>
 
         <Section title="Связанная заявка">
           {volunteer.application ? (

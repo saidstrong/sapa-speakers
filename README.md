@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 5A: volunteer contribution hours foundation.
+Phase 5B: admin volunteer contribution view.
 
 This phase includes:
 
@@ -74,6 +74,7 @@ This phase includes:
 - contribution hour records for confirmed volunteer work
 - admin hour awarding/updating from attended attendance records
 - volunteer-facing own contribution history on `/app/achievements`
+- admin volunteer detail contribution summary and contribution history
 
 Role assignment UI, public event pages, certificates, achievements, storage, notifications, analytics, rewards, and audit logs are intentionally not implemented yet.
 
@@ -270,6 +271,24 @@ http://localhost:3000/app/achievements
 ```
 
 This page is temporarily used as `Мой вклад`: it shows total confirmed hours and each contribution's event, hours, type, description, and award date. Real achievements, badges, certificates, rankings, rewards, and analytics are intentionally deferred.
+
+## Reviewing Volunteer Contributions
+
+Phase 5B adds contribution context to admin volunteer detail pages:
+
+```text
+http://localhost:3000/admin/volunteers/[id]
+```
+
+Admins can see total confirmed hours, contribution record count, latest contribution date, and a read-only contribution history for that volunteer. The history includes hours, contribution type, linked event when available, attendance status when linked, description, creation date, and the admin profile that awarded the record when available.
+
+Contribution entry and updates still happen from the attendance register:
+
+```text
+http://localhost:3000/admin/attendance
+```
+
+Certificates, achievements, badges, public profiles, rankings, and analytics remain deferred.
 
 ## Phase 2B Manual QA Checklist
 

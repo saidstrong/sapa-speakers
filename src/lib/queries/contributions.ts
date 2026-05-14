@@ -1,4 +1,5 @@
 import { requireAdminUser, requireCurrentUser } from "@/lib/auth/current-user";
+import type { EventAttendanceStatus } from "@/lib/queries/event-attendance";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const contributionTypes = ["event_attendance", "manual_adjustment"] as const;
@@ -26,8 +27,28 @@ export type ContributionEvent = {
   ends_at: string | null;
 };
 
+export type ContributionAttendance = {
+  id: string;
+  status: EventAttendanceStatus;
+  marked_at: string;
+};
+
+export type ContributionProfile = {
+  id: string;
+  email: string;
+  full_name: string | null;
+};
+
 export type VolunteerContributionHistoryItem = VolunteerContribution & {
+  attendance: ContributionAttendance | null;
+  awardedByProfile: ContributionProfile | null;
   event: ContributionEvent | null;
+};
+
+export type VolunteerContributionSummary = {
+  latestContributionAt: string | null;
+  recordCount: number;
+  totalHours: number;
 };
 
 export type CurrentVolunteerContributionHistory = {
@@ -37,6 +58,7 @@ export type CurrentVolunteerContributionHistory = {
     status: string;
   } | null;
   contributions: VolunteerContributionHistoryItem[];
+  summary: VolunteerContributionSummary;
   totalHours: number;
 };
 
@@ -50,8 +72,18 @@ type VolunteerContributionRow = Omit<
 
 type ContributionEventRow = ContributionEvent;
 
+type ContributionAttendanceRow = Omit<ContributionAttendance, "status"> & {
+  status: string;
+};
+
+type ContributionProfileRow = ContributionProfile;
+
 function isContributionType(value: string): value is ContributionType {
   return contributionTypes.includes(value as ContributionType);
+}
+
+function isEventAttendanceStatus(value: string): value is EventAttendanceStatus {
+  return value === "attended" || value === "absent" || value === "excused";
 }
 
 function normalizeHours(value: number | string) {
@@ -74,6 +106,98 @@ function uniqueValues(values: Array<string | null>) {
 
 function sumHours(contributions: readonly VolunteerContribution[]) {
   return contributions.reduce((total, contribution) => total + contribution.hours, 0);
+}
+
+function buildSummary(
+  contributions: readonly VolunteerContribution[]
+): VolunteerContributionSummary {
+  return {
+    latestContributionAt: contributions[0]?.awarded_at ?? null,
+    recordCount: contributions.length,
+    totalHours: sumHours(contributions)
+  };
+}
+
+async function hydrateContributionHistory(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  contributions: readonly VolunteerContribution[],
+  options: {
+    includeAdminContext?: boolean;
+  } = {}
+): Promise<VolunteerContributionHistoryItem[]> {
+  if (contributions.length === 0) {
+    return [];
+  }
+
+  const eventIds = uniqueValues(contributions.map((contribution) => contribution.event_id));
+  const attendanceIds = uniqueValues(
+    contributions.map((contribution) => contribution.attendance_id)
+  );
+  const awardedByIds = uniqueValues(
+    contributions.map((contribution) => contribution.awarded_by)
+  );
+
+  const [eventsResult, attendanceResult, profilesResult] = await Promise.all([
+    eventIds.length > 0
+      ? supabase
+          .from("events")
+          .select("id, title, starts_at, ends_at")
+          .in("id", eventIds)
+      : Promise.resolve({ data: [], error: null }),
+    options.includeAdminContext && attendanceIds.length > 0
+      ? supabase
+          .from("event_attendance")
+          .select("id, status, marked_at")
+          .in("id", attendanceIds)
+      : Promise.resolve({ data: [], error: null }),
+    options.includeAdminContext && awardedByIds.length > 0
+      ? supabase
+          .from("profiles")
+          .select("id, email, full_name")
+          .in("id", awardedByIds)
+      : Promise.resolve({ data: [], error: null })
+  ]);
+
+  if (eventsResult.error || attendanceResult.error || profilesResult.error) {
+    throw new Error("Не удалось загрузить связанные данные истории вклада.");
+  }
+
+  const eventsById = new Map(
+    ((eventsResult.data ?? []) as ContributionEventRow[]).map((event) => [
+      event.id,
+      event
+    ])
+  );
+  const attendanceById = new Map(
+    ((attendanceResult.data ?? []) as ContributionAttendanceRow[]).map((attendance) => [
+      attendance.id,
+      {
+        ...attendance,
+        status: isEventAttendanceStatus(attendance.status)
+          ? attendance.status
+          : "attended"
+      }
+    ])
+  );
+  const profilesById = new Map(
+    ((profilesResult.data ?? []) as ContributionProfileRow[]).map((profile) => [
+      profile.id,
+      profile
+    ])
+  );
+
+  return contributions.map((contribution) => ({
+    ...contribution,
+    attendance: contribution.attendance_id
+      ? attendanceById.get(contribution.attendance_id) ?? null
+      : null,
+    awardedByProfile: contribution.awarded_by
+      ? profilesById.get(contribution.awarded_by) ?? null
+      : null,
+    event: contribution.event_id
+      ? eventsById.get(contribution.event_id) ?? null
+      : null
+  }));
 }
 
 export async function listContributionsByAttendanceIdsForAdmin(
@@ -123,6 +247,7 @@ export async function getCurrentVolunteerContributionHistory(): Promise<CurrentV
     return {
       volunteer: null,
       contributions: [],
+      summary: buildSummary([]),
       totalHours: 0
     };
   }
@@ -147,35 +272,51 @@ export async function getCurrentVolunteerContributionHistory(): Promise<CurrentV
     return {
       volunteer,
       contributions: [],
+      summary: buildSummary([]),
       totalHours: 0
     };
   }
 
-  const eventIds = uniqueValues(contributions.map((contribution) => contribution.event_id));
-  const { data: eventRows, error: eventsError } =
-    eventIds.length > 0
-      ? await supabase
-          .from("events")
-          .select("id, title, starts_at, ends_at")
-          .in("id", eventIds)
-      : { data: [], error: null };
-
-  if (eventsError) {
-    throw new Error("Не удалось загрузить события для истории вклада.");
-  }
-
-  const eventsById = new Map(
-    ((eventRows ?? []) as ContributionEventRow[]).map((event) => [event.id, event])
-  );
+  const hydratedContributions = await hydrateContributionHistory(supabase, contributions);
+  const summary = buildSummary(contributions);
 
   return {
     volunteer,
-    contributions: contributions.map((contribution) => ({
-      ...contribution,
-      event: contribution.event_id
-        ? eventsById.get(contribution.event_id) ?? null
-        : null
-    })),
-    totalHours: sumHours(contributions)
+    contributions: hydratedContributions,
+    summary,
+    totalHours: summary.totalHours
+  };
+}
+
+export async function getVolunteerContributionHistoryForAdmin(
+  volunteerId: string
+): Promise<{
+  contributions: VolunteerContributionHistoryItem[];
+  summary: VolunteerContributionSummary;
+}> {
+  await requireAdminUser();
+  const supabase = await createSupabaseServerClient();
+
+  const { data, error } = await supabase
+    .from("volunteer_contributions")
+    .select(
+      "id, volunteer_id, event_id, attendance_id, hours, contribution_type, description, awarded_by, awarded_at, created_at, updated_at"
+    )
+    .eq("volunteer_id", volunteerId)
+    .order("awarded_at", { ascending: false });
+
+  if (error) {
+    throw new Error("Не удалось загрузить историю вклада волонтёра.");
+  }
+
+  const contributions = ((data ?? []) as VolunteerContributionRow[]).map(
+    normalizeContribution
+  );
+
+  return {
+    contributions: await hydrateContributionHistory(supabase, contributions, {
+      includeAdminContext: true
+    }),
+    summary: buildSummary(contributions)
   };
 }
