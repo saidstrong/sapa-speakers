@@ -396,6 +396,18 @@ It also shows a compact recent activity feed built from available application, r
 
 Analytics tables, charting dependencies, export/report generation, notifications, and a separate analytics engine are intentionally deferred.
 
+## Volunteer Dashboard Overview
+
+Phase 8B turns the volunteer landing page into a read-only personal overview:
+
+```text
+http://localhost:3000/app
+```
+
+Authenticated users see their account state. Approved volunteers also see their volunteer status, confirmed contribution hours, upcoming registered projects, certificate counts, achievement counts, and links to the relevant cabinet sections.
+
+The dashboard only reads existing profile, volunteer, event registration, contribution, certificate, and achievement records. It does not create notifications, analytics tables, charts, or mutation flows from the dashboard.
+
 ## Phase 2B Manual QA Checklist
 
 1. Submit a test volunteer application through `/join` or use an existing pending application.
