@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 5B: admin volunteer contribution view.
+Phase 6A: certificate records foundation.
 
 This phase includes:
 
@@ -75,8 +75,11 @@ This phase includes:
 - admin hour awarding/updating from attended attendance records
 - volunteer-facing own contribution history on `/app/achievements`
 - admin volunteer detail contribution summary and contribution history
+- certificate records for volunteers
+- admin certificate issuing from volunteer detail pages
+- admin and volunteer certificate record views
 
-Role assignment UI, public event pages, certificates, achievements, storage, notifications, analytics, rewards, and audit logs are intentionally not implemented yet.
+Role assignment UI, public event pages, certificate PDF generation, certificate storage, QR verification, achievements, notifications, analytics, rewards, and audit logs are intentionally not implemented yet.
 
 ## Supabase Migration
 
@@ -98,9 +101,10 @@ supabase/migrations/0006_published_events_app_access.sql
 supabase/migrations/0007_event_registrations.sql
 supabase/migrations/0008_event_attendance.sql
 supabase/migrations/0009_volunteer_contributions.sql
+supabase/migrations/0010_certificates.sql
 ```
 
-The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, `public.event_attendance`, and `public.volunteer_contributions`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance/contribution data, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, mark attendance, and award contribution hours, allow authenticated volunteers to view only published events, and allow active volunteers to manage and view their own event registration and contribution history.
+The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, `public.event_attendance`, `public.volunteer_contributions`, and `public.certificates`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance/contribution/certificate data, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, mark attendance, award contribution hours, and issue certificate records, allow authenticated volunteers to view only published events, and allow active volunteers to manage and view their own event registration, contribution history, and certificate records.
 
 ## Auth Setup Notes
 
@@ -289,6 +293,30 @@ http://localhost:3000/admin/attendance
 ```
 
 Certificates, achievements, badges, public profiles, rankings, and analytics remain deferred.
+
+## Issuing Certificate Records
+
+Phase 6A lets admin-capable users issue simple certificate records from:
+
+```text
+http://localhost:3000/admin/volunteers/[id]
+```
+
+Admins can enter a title, certificate type, and optional description. The record is stored as `issued` and linked to the volunteer and issuing admin profile. No PDF is generated in this phase.
+
+Admins can view all certificate records at:
+
+```text
+http://localhost:3000/admin/certificates
+```
+
+Volunteers can view their own certificates at:
+
+```text
+http://localhost:3000/app/certificates
+```
+
+PDF generation, Supabase Storage, certificate templates/images, QR verification, public verification pages, automated issuing rules, emails, achievements, and analytics are intentionally deferred.
 
 ## Phase 2B Manual QA Checklist
 

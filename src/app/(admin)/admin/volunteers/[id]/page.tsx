@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ApplicationStatusBadge } from "@/components/applications/application-status-badge";
+import { CertificateForm } from "@/components/certificates/certificate-form";
+import { CertificatesTable } from "@/components/certificates/certificates-table";
 import { ContributionHistoryTable } from "@/components/contributions/contribution-history-table";
 import { ContributionSummaryCard } from "@/components/contributions/contribution-summary-card";
 import { PageHeader } from "@/components/ui/page-header";
@@ -8,8 +10,10 @@ import {
   volunteerStatusLabels
 } from "@/components/volunteers/volunteer-status-badge";
 import { getRoleLabel } from "@/lib/auth/roles";
+import { listVolunteerCertificatesForAdmin } from "@/lib/queries/certificates";
 import { getVolunteerContributionHistoryForAdmin } from "@/lib/queries/contributions";
 import { getVolunteerDetail, volunteerStatuses } from "@/lib/queries/volunteers";
+import { issueCertificate } from "./certificate-actions";
 import { updateVolunteer } from "./actions";
 
 type VolunteerDetailPageProps = {
@@ -69,10 +73,12 @@ export default async function VolunteerDetailPage({
 }: VolunteerDetailPageProps) {
   const { id } = await params;
   const result = await searchParams;
-  const [volunteer, contributionHistory] = await Promise.all([
+  const [volunteer, contributionHistory, certificates] = await Promise.all([
     getVolunteerDetail(id),
-    getVolunteerContributionHistoryForAdmin(id)
+    getVolunteerContributionHistoryForAdmin(id),
+    listVolunteerCertificatesForAdmin(id)
   ]);
+  const certificateAction = issueCertificate.bind(null, volunteer.id);
   const updateAction = updateVolunteer.bind(null, volunteer.id);
 
   return (
@@ -145,6 +151,31 @@ export default async function VolunteerDetailPage({
             totalHours={contributionHistory.summary.totalHours}
           />
         </section>
+
+        <Section title="Сертификаты">
+          <div className="grid gap-6">
+            <div>
+              <h3 className="text-base font-semibold text-oxford">
+                Выдать сертификат
+              </h3>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+                Создаётся только запись сертификата. PDF, шаблоны и QR-проверка
+                будут добавлены позже.
+              </p>
+            </div>
+            <CertificateForm action={certificateAction} />
+            <div>
+              <h3 className="mb-4 text-base font-semibold text-oxford">
+                Выданные сертификаты
+              </h3>
+              <CertificatesTable
+                certificates={certificates}
+                emptyDescription="У этого волонтёра пока нет сертификатов."
+                showIssuer
+              />
+            </div>
+          </div>
+        </Section>
 
         <Section title="Связанная заявка">
           {volunteer.application ? (
