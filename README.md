@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 7B: achievement management detail and revoke workflow.
+Phase 8A: real admin dashboard metrics.
 
 This phase includes:
 
@@ -87,8 +87,10 @@ This phase includes:
 - admin achievement detail pages
 - achievement revocation with a recorded reason
 - revoked achievement status visible to volunteers
+- real read-only operational metrics on `/admin`
+- recent operational activity from existing tables
 
-Role assignment UI, public event pages, certificate PDF generation, certificate storage, QR verification, public certificate verification, automated achievement rules, points, levels, leaderboards, notifications, analytics, rewards, and audit logs are intentionally not implemented yet.
+Role assignment UI, public event pages, certificate PDF generation, certificate storage, QR verification, public certificate verification, automated achievement rules, points, levels, leaderboards, notifications, analytics, exports, rewards, and audit logs are intentionally not implemented yet.
 
 ## Supabase Migration
 
@@ -379,6 +381,20 @@ Admins can inspect achievement metadata, awarding context, linked volunteer deta
 Volunteers see revoked achievements clearly in their own achievements section, including revocation date and reason when available.
 
 Automated achievement rules, points, levels, leaderboards, public achievement pages, notifications, rewards, and analytics are still deferred.
+
+## Admin Dashboard Metrics
+
+Phase 8A turns the admin landing page into a read-only operational dashboard:
+
+```text
+http://localhost:3000/admin
+```
+
+The dashboard uses existing tables to show real counts for pending volunteer applications, active volunteers, published and upcoming events, active event registrations, marked attendance, confirmed contribution hours, issued certificates, and awarded achievements.
+
+It also shows a compact recent activity feed built from available application, registration, attendance, contribution, certificate, and achievement timestamps. The dashboard links back to the relevant admin sections and does not mutate data.
+
+Analytics tables, charting dependencies, export/report generation, notifications, and a separate analytics engine are intentionally deferred.
 
 ## Phase 2B Manual QA Checklist
 
