@@ -1,6 +1,8 @@
+import { notFound } from "next/navigation";
 import { requireAdminUser, requireCurrentUser } from "@/lib/auth/current-user";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
+  certificateIdSchema,
   certificateStatuses,
   certificateTypes,
   type CertificateStatus,
@@ -44,6 +46,17 @@ export type CurrentVolunteerCertificates = {
   certificates: CertificateListItem[];
   volunteer: CertificateVolunteer | null;
 };
+
+export type RevokeCertificateResult =
+  | {
+      status: "revoked";
+      certificateId: string;
+      volunteerId: string;
+    }
+  | {
+      status: "already_revoked" | "invalid_reason" | "not_found";
+      volunteerId?: string;
+    };
 
 type CertificateRow = Omit<
   CertificateRecord,
@@ -163,6 +176,42 @@ export async function listCertificatesForAdmin(): Promise<CertificateListItem[]>
   );
 }
 
+export async function getCertificateForAdmin(id: string): Promise<CertificateListItem> {
+  await requireAdminUser();
+
+  const parsedId = certificateIdSchema.safeParse(id);
+
+  if (!parsedId.success) {
+    notFound();
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  const { data, error } = await supabase
+    .from("certificates")
+    .select(certificateFields)
+    .eq("id", parsedId.data)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("Не удалось загрузить сертификат.");
+  }
+
+  if (!data) {
+    notFound();
+  }
+
+  const [certificate] = await hydrateCertificates(supabase, [
+    normalizeCertificate(data as CertificateRow)
+  ]);
+
+  if (!certificate) {
+    notFound();
+  }
+
+  return certificate;
+}
+
 export async function listVolunteerCertificatesForAdmin(
   volunteerId: string
 ): Promise<CertificateListItem[]> {
@@ -225,5 +274,90 @@ export async function listCurrentVolunteerCertificates(): Promise<CurrentVolunte
       ((data ?? []) as CertificateRow[]).map(normalizeCertificate)
     ),
     volunteer
+  };
+}
+
+export async function revokeCertificateForAdmin({
+  certificateId,
+  revocationReason
+}: {
+  certificateId: string;
+  revocationReason: string;
+}): Promise<RevokeCertificateResult> {
+  await requireAdminUser();
+
+  const parsedId = certificateIdSchema.safeParse(certificateId);
+  const trimmedReason = revocationReason.trim();
+
+  if (!parsedId.success) {
+    return {
+      status: "not_found"
+    };
+  }
+
+  if (trimmedReason.length === 0) {
+    return {
+      status: "invalid_reason"
+    };
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  const { data: certificate, error: certificateError } = await supabase
+    .from("certificates")
+    .select("id, volunteer_id, status")
+    .eq("id", parsedId.data)
+    .maybeSingle();
+
+  if (certificateError) {
+    throw new Error("Не удалось проверить сертификат перед отзывом.");
+  }
+
+  if (!certificate) {
+    return {
+      status: "not_found"
+    };
+  }
+
+  const certificateRecord = certificate as {
+    id: string;
+    volunteer_id: string;
+    status: string;
+  };
+
+  if (certificateRecord.status === "revoked") {
+    return {
+      status: "already_revoked",
+      volunteerId: certificateRecord.volunteer_id
+    };
+  }
+
+  const { data: updatedCertificate, error: updateError } = await supabase
+    .from("certificates")
+    .update({
+      status: "revoked",
+      revoked_at: new Date().toISOString(),
+      revocation_reason: trimmedReason
+    })
+    .eq("id", parsedId.data)
+    .eq("status", "issued")
+    .select("id, volunteer_id")
+    .maybeSingle();
+
+  if (updateError) {
+    throw new Error("Не удалось отозвать сертификат.");
+  }
+
+  if (!updatedCertificate) {
+    return {
+      status: "already_revoked",
+      volunteerId: certificateRecord.volunteer_id
+    };
+  }
+
+  return {
+    status: "revoked",
+    certificateId: updatedCertificate.id,
+    volunteerId: updatedCertificate.volunteer_id
   };
 }

@@ -10,7 +10,7 @@ export default async function CertificatesPage() {
     <>
       <PageHeader
         title="Сертификаты"
-        description="Ваши выданные сертификаты SapaSpeakers. PDF-версия сертификатов будет добавлена позже."
+        description="Ваши выданные сертификаты SapaSpeakers. Отозванные сертификаты отмечаются отдельно."
       />
 
       <section className="mb-6 rounded-lg border border-vista/40 bg-vista/15 p-4 text-sm leading-6 text-oxford">

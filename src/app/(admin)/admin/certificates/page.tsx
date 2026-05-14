@@ -14,7 +14,9 @@ export default async function AdminCertificatesPage() {
 
       <CertificatesTable
         certificates={certificates}
+        detailBasePath="/admin/certificates"
         emptyDescription="Пока нет выданных сертификатов. Выдать сертификат можно со страницы волонтёра."
+        showDetailAction
         showIssuer
         showVolunteer
       />

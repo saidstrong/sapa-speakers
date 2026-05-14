@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CertificateStatusBadge } from "@/components/certificates/certificate-status-badge";
 import { certificateTypeLabels } from "@/components/certificates/certificate-form";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -7,7 +8,10 @@ type CertificatesTableProps = {
   certificates: readonly CertificateListItem[];
   emptyDescription: string;
   emptyTitle?: string;
+  detailBasePath?: string;
+  showDetailAction?: boolean;
   showIssuer?: boolean;
+  showRevocationDetails?: boolean;
   showVolunteer?: boolean;
 };
 
@@ -32,14 +36,22 @@ function displayProfile(profile: CertificateListItem["volunteerProfile"]) {
 
 export function CertificatesTable({
   certificates,
+  detailBasePath,
   emptyDescription,
   emptyTitle = "Сертификаты",
+  showDetailAction = false,
   showIssuer = false,
+  showRevocationDetails = true,
   showVolunteer = false
 }: CertificatesTableProps) {
   if (certificates.length === 0) {
     return <EmptyState title={emptyTitle} description={emptyDescription} />;
   }
+
+  const hasRevokedCertificates = certificates.some(
+    (certificate) => certificate.status === "revoked"
+  );
+  const shouldShowRevocationDetails = showRevocationDetails && hasRevokedCertificates;
 
   return (
     <div className="overflow-hidden rounded-lg border border-oxford/10 bg-white shadow-sm">
@@ -52,15 +64,37 @@ export function CertificatesTable({
               <th className="px-4 py-3">Тип</th>
               <th className="px-4 py-3">Статус</th>
               <th className="px-4 py-3">Дата выдачи</th>
+              {shouldShowRevocationDetails ? (
+                <th className="px-4 py-3">Отзыв</th>
+              ) : null}
               {showIssuer ? <th className="px-4 py-3">Выдал</th> : null}
               <th className="px-4 py-3">Описание</th>
+              {showDetailAction && detailBasePath ? (
+                <th className="px-4 py-3">Действие</th>
+              ) : null}
             </tr>
           </thead>
           <tbody className="divide-y divide-oxford/10">
             {certificates.map((certificate) => (
-              <tr key={certificate.id} className="align-top">
+              <tr
+                key={certificate.id}
+                className={
+                  certificate.status === "revoked"
+                    ? "bg-red-50/60 align-top"
+                    : "align-top"
+                }
+              >
                 <td className="px-4 py-4 font-semibold text-oxford">
-                  {certificate.title}
+                  {detailBasePath ? (
+                    <Link
+                      className="transition hover:text-orange"
+                      href={`${detailBasePath}/${certificate.id}`}
+                    >
+                      {certificate.title}
+                    </Link>
+                  ) : (
+                    certificate.title
+                  )}
                 </td>
                 {showVolunteer ? (
                   <td className="px-4 py-4">
@@ -81,6 +115,20 @@ export function CertificatesTable({
                 <td className="px-4 py-4 text-muted">
                   {formatDate(certificate.issued_at)}
                 </td>
+                {shouldShowRevocationDetails ? (
+                  <td className="max-w-sm px-4 py-4 text-muted">
+                    {certificate.status === "revoked" ? (
+                      <div className="space-y-1">
+                        <div>{formatDate(certificate.revoked_at)}</div>
+                        {certificate.revocation_reason ? (
+                          <div>{certificate.revocation_reason}</div>
+                        ) : null}
+                      </div>
+                    ) : (
+                      "Не отозван"
+                    )}
+                  </td>
+                ) : null}
                 {showIssuer ? (
                   <td className="px-4 py-4 text-muted">
                     {certificate.issuedByProfile
@@ -92,6 +140,16 @@ export function CertificatesTable({
                 <td className="max-w-md px-4 py-4 text-muted">
                   {certificate.description ?? "Нет"}
                 </td>
+                {showDetailAction && detailBasePath ? (
+                  <td className="px-4 py-4">
+                    <Link
+                      className="rounded-md border border-oxford/15 px-3 py-2 text-sm font-semibold text-oxford transition hover:border-orange/40 hover:text-orange"
+                      href={`${detailBasePath}/${certificate.id}`}
+                    >
+                      Открыть
+                    </Link>
+                  </td>
+                ) : null}
               </tr>
             ))}
           </tbody>

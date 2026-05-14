@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 6A: certificate records foundation.
+Phase 6B: certificate management detail and revoke workflow.
 
 This phase includes:
 
@@ -78,8 +78,11 @@ This phase includes:
 - certificate records for volunteers
 - admin certificate issuing from volunteer detail pages
 - admin and volunteer certificate record views
+- admin certificate detail pages
+- certificate revocation with a recorded reason
+- revoked certificate status visible to volunteers
 
-Role assignment UI, public event pages, certificate PDF generation, certificate storage, QR verification, achievements, notifications, analytics, rewards, and audit logs are intentionally not implemented yet.
+Role assignment UI, public event pages, certificate PDF generation, certificate storage, QR verification, public certificate verification, achievements, notifications, analytics, rewards, and audit logs are intentionally not implemented yet.
 
 ## Supabase Migration
 
@@ -317,6 +320,20 @@ http://localhost:3000/app/certificates
 ```
 
 PDF generation, Supabase Storage, certificate templates/images, QR verification, public verification pages, automated issuing rules, emails, achievements, and analytics are intentionally deferred.
+
+## Managing Certificate Records
+
+Phase 6B adds admin certificate detail pages:
+
+```text
+http://localhost:3000/admin/certificates/[id]
+```
+
+Admins can inspect certificate metadata, issuing context, linked volunteer details, and revocation state. Issued certificates can be revoked with a required reason. Revocation updates the existing certificate record to `revoked`, stores `revoked_at`, and keeps the record visible instead of deleting it.
+
+Volunteers see revoked certificates clearly in their own certificate list, including revocation date and reason when available.
+
+PDF generation, Supabase Storage, QR verification, public certificate verification pages, templates/images, automated issuing rules, emails, achievements, and analytics are still deferred.
 
 ## Phase 2B Manual QA Checklist
 
