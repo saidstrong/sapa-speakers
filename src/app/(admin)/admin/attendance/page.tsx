@@ -1,16 +1,20 @@
 import { AttendanceTable } from "@/components/attendance/attendance-table";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireAdminUser } from "@/lib/auth/current-user";
+import { listContributionsByAttendanceIdsForAdmin } from "@/lib/queries/contributions";
 import {
   eventAttendanceStatuses,
   listAttendanceRegisterForAdmin,
   type EventAttendanceStatus
 } from "@/lib/queries/event-attendance";
+import { saveAttendanceContribution } from "./contribution-actions";
 
 type AdminAttendancePageProps = {
   searchParams?: Promise<{
+    message?: string;
     search?: string;
     status?: string;
+    type?: string;
   }>;
 };
 
@@ -34,6 +38,9 @@ export default async function AdminAttendancePage({
     search,
     status
   });
+  const contributions = await listContributionsByAttendanceIdsForAdmin(
+    records.map((record) => record.id)
+  );
 
   return (
     <>
@@ -47,7 +54,25 @@ export default async function AdminAttendancePage({
         достижения будут добавлены позже.
       </section>
 
-      <AttendanceTable records={records} search={search} status={status} />
+      {params?.message ? (
+        <div
+          className={
+            params.type === "success"
+              ? "mb-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-medium text-green-800"
+              : "mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800"
+          }
+        >
+          {params.message}
+        </div>
+      ) : null}
+
+      <AttendanceTable
+        contributionAction={saveAttendanceContribution}
+        contributions={contributions}
+        records={records}
+        search={search}
+        status={status}
+      />
     </>
   );
 }

@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 4B: admin attendance register.
+Phase 5A: volunteer contribution hours foundation.
 
 This phase includes:
 
@@ -71,8 +71,11 @@ This phase includes:
 - attendance table for registered event participants
 - admin attendance marking for registered participants with `attended`, `absent`, and `excused` statuses
 - central read-only `/admin/attendance` register for marked attendance records
+- contribution hour records for confirmed volunteer work
+- admin hour awarding/updating from attended attendance records
+- volunteer-facing own contribution history on `/app/achievements`
 
-Role assignment UI, public event pages, volunteer hours, project applications with moderation, certificates, achievements, storage, notifications, analytics, and audit logs are intentionally not implemented yet.
+Role assignment UI, public event pages, certificates, achievements, storage, notifications, analytics, rewards, and audit logs are intentionally not implemented yet.
 
 ## Supabase Migration
 
@@ -93,9 +96,10 @@ supabase/migrations/0005_fix_events_grants.sql
 supabase/migrations/0006_published_events_app_access.sql
 supabase/migrations/0007_event_registrations.sql
 supabase/migrations/0008_event_attendance.sql
+supabase/migrations/0009_volunteer_contributions.sql
 ```
 
-The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, and `public.event_attendance`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance data, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, and mark attendance, allow authenticated volunteers to view only published events, and allow active volunteers to manage and view their own event registration.
+The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, `public.event_attendance`, and `public.volunteer_contributions`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance/contribution data, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, mark attendance, and award contribution hours, allow authenticated volunteers to view only published events, and allow active volunteers to manage and view their own event registration and contribution history.
 
 ## Auth Setup Notes
 
@@ -248,6 +252,24 @@ http://localhost:3000/admin/events/[id]
 ```
 
 The register supports lightweight server-side filtering by attendance status and search by event title, volunteer name, or email. Volunteer hours, contribution history, certificates, achievements, QR check-in, public attendance pages, reminders, and analytics remain deferred.
+
+## Confirming Contribution Hours
+
+Phase 5A lets admin-capable users open:
+
+```text
+http://localhost:3000/admin/attendance
+```
+
+For attendance rows marked `attended`, admins can award or update confirmed contribution hours. The form saves hours, an optional description, and the admin profile that awarded the record. Hours are derived from an existing attendance record, and the server action verifies that the attendance status is `attended` before saving.
+
+Volunteers can view their own confirmed contribution history at:
+
+```text
+http://localhost:3000/app/achievements
+```
+
+This page is temporarily used as `Мой вклад`: it shows total confirmed hours and each contribution's event, hours, type, description, and award date. Real achievements, badges, certificates, rankings, rewards, and analytics are intentionally deferred.
 
 ## Phase 2B Manual QA Checklist
 

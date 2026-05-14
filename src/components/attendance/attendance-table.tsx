@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { ContributionForm } from "@/components/contributions/contribution-form";
 import { AttendanceStatusBadge } from "@/components/events/attendance-status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import type { VolunteerContribution } from "@/lib/queries/contributions";
 import {
   eventAttendanceStatuses,
   type AttendanceRegisterRecord,
@@ -8,6 +10,8 @@ import {
 } from "@/lib/queries/event-attendance";
 
 type AttendanceTableProps = {
+  contributionAction: (formData: FormData) => Promise<void>;
+  contributions: readonly VolunteerContribution[];
   records: readonly AttendanceRegisterRecord[];
   search?: string;
   status?: EventAttendanceStatus | "all";
@@ -102,10 +106,18 @@ function Filters({
 }
 
 export function AttendanceTable({
+  contributionAction,
+  contributions,
   records,
   search,
   status = "all"
 }: AttendanceTableProps) {
+  const contributionsByAttendanceId = new Map(
+    contributions
+      .filter((contribution) => contribution.attendance_id)
+      .map((contribution) => [contribution.attendance_id, contribution])
+  );
+
   return (
     <div className="grid gap-4">
       <Filters search={search} status={status} />
@@ -125,6 +137,7 @@ export function AttendanceTable({
                   <th className="px-4 py-3">Дата события</th>
                   <th className="px-4 py-3">Волонтёр</th>
                   <th className="px-4 py-3">Статус</th>
+                  <th className="px-4 py-3">Часы</th>
                   <th className="px-4 py-3">Отмечено</th>
                   <th className="px-4 py-3">Отметил</th>
                   <th className="px-4 py-3">Комментарий</th>
@@ -148,6 +161,21 @@ export function AttendanceTable({
                     </td>
                     <td className="px-4 py-4">
                       <AttendanceStatusBadge status={record.status} />
+                    </td>
+                    <td className="px-4 py-4">
+                      {record.status === "attended" ? (
+                        <ContributionForm
+                          action={contributionAction}
+                          attendanceId={record.id}
+                          contribution={
+                            contributionsByAttendanceId.get(record.id) ?? null
+                          }
+                        />
+                      ) : (
+                        <p className="max-w-48 text-sm leading-6 text-muted">
+                          Часы начисляются только для статуса «Был».
+                        </p>
+                      )}
                     </td>
                     <td className="px-4 py-4 text-muted">
                       {formatDate(record.marked_at)}

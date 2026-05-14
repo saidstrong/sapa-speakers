@@ -1,12 +1,30 @@
+import { ContributionHistoryTable } from "@/components/contributions/contribution-history-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
-import { RU } from "@/lib/constants/ru";
+import { getCurrentVolunteerContributionHistory } from "@/lib/queries/contributions";
 
-export default function AchievementsPage() {
+export default async function AchievementsPage() {
+  const { contributions, totalHours, volunteer } =
+    await getCurrentVolunteerContributionHistory();
+
   return (
     <>
-      <PageHeader title="Мои достижения" description="Подтверждённые достижения волонтёра." />
-      <EmptyState title="Мои достижения" description={RU.emptyStates.achievements} />
+      <PageHeader
+        title="Мой вклад"
+        description="Здесь отображаются подтверждённые часы волонтёрства. Достижения и бейджи будут добавлены позже."
+      />
+
+      {!volunteer ? (
+        <EmptyState
+          title="История вклада"
+          description="История вклада доступна только одобренным волонтёрам."
+        />
+      ) : (
+        <ContributionHistoryTable
+          contributions={contributions}
+          totalHours={totalHours}
+        />
+      )}
     </>
   );
 }
