@@ -408,6 +408,18 @@ Authenticated users see their account state. Approved volunteers also see their 
 
 The dashboard only reads existing profile, volunteer, event registration, contribution, certificate, and achievement records. It does not create notifications, analytics tables, charts, or mutation flows from the dashboard.
 
+## Profile Self-Management
+
+Phase 9A makes the volunteer profile page a real authenticated account surface:
+
+```text
+http://localhost:3000/app/profile
+```
+
+Users can view their email, role, contact fields, account creation date, and volunteer card status when one exists. They can safely update only basic contact fields: full name, phone, and Telegram.
+
+Email changes, role editing, volunteer status changes, avatar/storage features, notification preferences, and password settings are intentionally deferred.
+
 ## Phase 2B Manual QA Checklist
 
 1. Submit a test volunteer application through `/join` or use an existing pending application.
