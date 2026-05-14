@@ -1,5 +1,6 @@
 import { requireAdminUser, requireCurrentUser } from "@/lib/auth/current-user";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { eventStatuses, type EventStatus } from "@/lib/validations/event";
 
 export type EventRegistrationStatus = "registered" | "cancelled";
 
@@ -36,16 +37,86 @@ export type AdminEventRegistration = EventRegistration & {
   profile: VolunteerRegistrationProfile | null;
 };
 
+export type EventRegistrationEvent = {
+  id: string;
+  title: string;
+  location: string | null;
+  starts_at: string;
+  ends_at: string | null;
+  status: EventStatus;
+};
+
+export type MyEventRegistration = EventRegistration & {
+  event: EventRegistrationEvent | null;
+};
+
+export type CurrentVolunteerEventRegistrations = {
+  volunteer: CurrentVolunteerRecord | null;
+  registrations: MyEventRegistration[];
+};
+
 type RegistrationRow = EventRegistration;
 
 type VolunteerRow = CurrentVolunteerRecord;
 
 type ProfileRow = VolunteerRegistrationProfile;
 
+type EventRegistrationEventRow = Omit<EventRegistrationEvent, "status"> & {
+  status: string;
+};
+
+type MyEventRegistrationRow = RegistrationRow & {
+  event: EventRegistrationEventRow | EventRegistrationEventRow[] | null;
+};
+
+const myEventRegistrationFields = `
+  id,
+  event_id,
+  volunteer_id,
+  status,
+  registered_at,
+  cancelled_at,
+  notes,
+  event:events (
+    id,
+    title,
+    location,
+    starts_at,
+    ends_at,
+    status
+  )
+`;
+
+function isEventStatus(value: string): value is EventStatus {
+  return eventStatuses.includes(value as EventStatus);
+}
+
 function normalizeRegistration(row: RegistrationRow): EventRegistration {
   return {
     ...row,
     status: row.status === "cancelled" ? "cancelled" : "registered"
+  };
+}
+
+function normalizeRegistrationEvent(
+  value: EventRegistrationEventRow | EventRegistrationEventRow[] | null
+): EventRegistrationEvent | null {
+  const row = Array.isArray(value) ? value[0] ?? null : value;
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    ...row,
+    status: isEventStatus(row.status) ? row.status : "draft"
+  };
+}
+
+function normalizeMyEventRegistration(row: MyEventRegistrationRow): MyEventRegistration {
+  return {
+    ...normalizeRegistration(row),
+    event: normalizeRegistrationEvent(row.event)
   };
 }
 
@@ -103,6 +174,48 @@ export async function getCurrentEventRegistrationState(
       ? normalizeRegistration(registrationRow as RegistrationRow)
       : null,
     registeredCount
+  };
+}
+
+export async function listCurrentVolunteerEventRegistrations(): Promise<CurrentVolunteerEventRegistrations> {
+  const currentUser = await requireCurrentUser();
+  const supabase = await createSupabaseServerClient();
+  const profileId = currentUser.profile?.id ?? currentUser.user.id;
+
+  const { data: volunteerRow, error: volunteerError } = await supabase
+    .from("volunteers")
+    .select("id, profile_id, status")
+    .eq("profile_id", profileId)
+    .maybeSingle();
+
+  if (volunteerError) {
+    throw new Error("Не удалось загрузить волонтёрскую карточку.");
+  }
+
+  const volunteer = (volunteerRow as VolunteerRow | null) ?? null;
+
+  if (!volunteer) {
+    return {
+      volunteer: null,
+      registrations: []
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("event_registrations")
+    .select(myEventRegistrationFields)
+    .eq("volunteer_id", volunteer.id)
+    .order("registered_at", { ascending: false });
+
+  if (error) {
+    throw new Error("Не удалось загрузить ваши записи на проекты.");
+  }
+
+  return {
+    volunteer,
+    registrations: ((data ?? []) as MyEventRegistrationRow[]).map(
+      normalizeMyEventRegistration
+    )
   };
 }
 

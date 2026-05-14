@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 3C: volunteer event registration v1.
+Phase 3D: volunteer-facing my registrations surface.
 
 This phase includes:
 
@@ -67,6 +67,7 @@ This phase includes:
 - event registration table for active approved volunteers
 - volunteer self-service registration and cancellation for published events
 - admin event detail participant list
+- volunteer-facing `/app/applications` view of the current user's own project registrations
 
 Role assignment UI, public event pages, attendance, project applications with moderation, certificates, achievements, storage, notifications, and audit logs are intentionally not implemented yet.
 
@@ -90,7 +91,7 @@ supabase/migrations/0006_published_events_app_access.sql
 supabase/migrations/0007_event_registrations.sql
 ```
 
-The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, and `public.event_registrations`, enable RLS, keep anonymous users away from private profile/volunteer/event data, allow admin-capable authenticated users to review public volunteer applications and manage internal events, allow authenticated volunteers to view only published events, and allow active volunteers to manage their own event registration.
+The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, and `public.event_registrations`, enable RLS, keep anonymous users away from private profile/volunteer/event data, allow admin-capable authenticated users to review public volunteer applications and manage internal events, allow authenticated volunteers to view only published events, and allow active volunteers to manage and view their own event registration.
 
 ## Auth Setup Notes
 
@@ -189,6 +190,24 @@ http://localhost:3000/admin/events/[id]
 ```
 
 Attendance, volunteer hours, waitlists, certificates, achievements, reminders, and analytics are intentionally not included in Phase 3C.
+
+## Viewing My Project Registrations
+
+Phase 3D lets authenticated volunteers open:
+
+```text
+http://localhost:3000/app/applications
+```
+
+The page shows only the current user's own project registrations, including the event title, event status, event date/time, location, registration status, registration time, cancellation time when present, and a link back to the project detail page.
+
+Registration and cancellation still happen on the project detail page:
+
+```text
+http://localhost:3000/app/projects/[id]
+```
+
+Users without a linked volunteer row see an approval-pending message. Volunteers with no registrations see a simple empty state pointing them back to the projects section. Attendance, volunteer hours, certificates, achievements, reminders, and analytics are intentionally deferred.
 
 ## Phase 2B Manual QA Checklist
 
