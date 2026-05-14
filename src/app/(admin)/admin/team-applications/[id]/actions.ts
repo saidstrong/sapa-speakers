@@ -123,7 +123,7 @@ export async function approveVolunteerApplication(
     redirectWithResult(
       parsedId.data,
       "error",
-      "Заявка уже отклонена. Повторное одобрение в этой фазе не выполняется."
+      "Заявка уже отклонена. Повторное одобрение через интерфейс не предусмотрено."
     );
   }
 
@@ -180,7 +180,7 @@ export async function declineVolunteerApplication(
     redirectWithResult(
       parsedId.data,
       "error",
-      "Заявка уже одобрена. Отклонение одобренной заявки в этой фазе не выполняется."
+      "Заявка уже одобрена. Отклонение одобренной заявки через интерфейс не предусмотрено."
     );
   }
 

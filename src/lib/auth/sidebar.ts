@@ -31,13 +31,13 @@ export const sidebarItems = [
     permissions: ["view_app"]
   },
   {
-    title: "Мои заявки",
+    title: "Мои записи",
     href: "/app/applications",
     zone: "app",
     permissions: ["view_app"]
   },
   {
-    title: "Мои достижения",
+    title: "Вклад и достижения",
     href: "/app/achievements",
     zone: "app",
     permissions: ["view_own_achievements"]
@@ -73,7 +73,7 @@ export const sidebarItems = [
     permissions: ["view_project_applications"]
   },
   {
-    title: "События и проекты",
+    title: "События",
     href: "/admin/events",
     zone: "admin",
     permissions: ["view_admin"]
@@ -85,7 +85,7 @@ export const sidebarItems = [
     permissions: ["view_admin"]
   },
   {
-    title: "Проекты",
+    title: "Проектный раздел",
     href: "/admin/projects",
     zone: "admin",
     permissions: ["create_project", "manage_all_projects", "manage_own_projects"]

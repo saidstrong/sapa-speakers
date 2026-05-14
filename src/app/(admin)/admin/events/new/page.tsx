@@ -17,7 +17,7 @@ export default async function NewEventPage({ searchParams }: NewEventPageProps) 
     <>
       <PageHeader
         title="Новое событие"
-        description="Создайте внутреннюю активность. Регистрация волонтёров и посещаемость будут добавлены в следующих фазах."
+        description="Создайте внутреннюю активность: встречу, проект, обучение или организационное мероприятие."
         action={
           <Link
             className="rounded-md border border-oxford/15 bg-white px-4 py-2 text-sm font-semibold text-oxford"

@@ -182,8 +182,8 @@ export default async function VolunteerApplicationDetailPage({
           </div>
         ) : (
           <p className="mt-3 text-sm leading-6 text-muted">
-            Решение уже принято. В Phase 2A повторное изменение статуса не
-            выполняется через интерфейс.
+            Решение уже принято. Повторное изменение статуса через интерфейс не
+            предусмотрено.
           </p>
         )}
       </section>

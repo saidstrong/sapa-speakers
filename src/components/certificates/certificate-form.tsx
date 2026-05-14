@@ -54,7 +54,7 @@ export function CertificateForm({ action }: CertificateFormProps) {
         Выдать сертификат
       </button>
       <p className="text-sm leading-6 text-muted md:col-span-2">
-        В этой фазе создаётся только запись сертификата. PDF, шаблоны, QR-коды и
+        Сейчас создаётся только запись сертификата. PDF, шаблоны, QR-коды и
         загрузка файлов будут добавлены позже.
       </p>
     </form>

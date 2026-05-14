@@ -27,7 +27,7 @@ export default async function EditEventPage({
     <>
       <PageHeader
         title="Редактирование события"
-        description="Обновите основные поля события. Удаление, посещаемость и регистрация волонтёров не входят в эту фазу."
+        description="Обновите основные поля события. Регистрации и посещаемость управляются на странице события."
         action={
           <Link
             className="rounded-md border border-oxford/15 bg-white px-4 py-2 text-sm font-semibold text-oxford"

@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 8A: real admin dashboard metrics.
+Phase 10A: launch UI/UX polish.
 
 This phase includes:
 
@@ -89,6 +89,10 @@ This phase includes:
 - revoked achievement status visible to volunteers
 - real read-only operational metrics on `/admin`
 - recent operational activity from existing tables
+- real read-only volunteer overview on `/app`
+- safe authenticated profile contact updates on `/app/profile`
+- internal announcements managed by admins and read by authenticated volunteers
+- launch UI polish for navigation, page copy, empty states, focus states, and mobile table readability
 
 Role assignment UI, public event pages, certificate PDF generation, certificate storage, QR verification, public certificate verification, automated achievement rules, points, levels, leaderboards, notifications, analytics, exports, rewards, and audit logs are intentionally not implemented yet.
 
@@ -114,9 +118,11 @@ supabase/migrations/0008_event_attendance.sql
 supabase/migrations/0009_volunteer_contributions.sql
 supabase/migrations/0010_certificates.sql
 supabase/migrations/0011_achievements.sql
+supabase/migrations/0012_profile_self_update.sql
+supabase/migrations/0013_announcements.sql
 ```
 
-The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, `public.event_attendance`, `public.volunteer_contributions`, `public.certificates`, and `public.achievements`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance/contribution/certificate/achievement data, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, mark attendance, award contribution hours, issue certificate records, and award achievement records, allow authenticated volunteers to view only published events, and allow active volunteers to manage and view their own event registration, contribution history, certificate records, and achievement records.
+The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, `public.event_attendance`, `public.volunteer_contributions`, `public.certificates`, `public.achievements`, and `public.announcements`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance/contribution/certificate/achievement/announcement data, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, mark attendance, award contribution hours, issue certificate records, award achievement records, and manage announcements, allow authenticated volunteers to view only published events and announcements, and allow active volunteers to manage and view their own event registration, contribution history, certificate records, and achievement records. Profile self-update is limited to safe contact columns.
 
 ## Auth Setup Notes
 
@@ -434,6 +440,12 @@ Admin-capable users can create announcement drafts, publish announcements, archi
 Authenticated volunteers see only published announcements in the app, newest published first.
 
 Email or push notifications, comments, reactions, read receipts, targeting, attachments, public announcement pages, and announcement analytics are intentionally deferred.
+
+## Launch UI Polish
+
+Phase 10A improves the launch experience across public, volunteer, and admin surfaces. The polish pass updates Russian-first page copy, action-oriented empty states, sidebar labels, keyboard focus states, and mobile table readability.
+
+This phase does not change database schema, migrations, RLS policies, authentication behavior, Supabase queries, or business workflows.
 
 ## Phase 2B Manual QA Checklist
 

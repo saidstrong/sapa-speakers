@@ -63,7 +63,7 @@ export default async function ProjectDetailPage({
     <>
       <PageHeader
         title={event.title}
-        description="Опубликованный проект или событие SapaSpeakers. В этой фазе доступен только просмотр."
+        description="Опубликованный проект или событие SapaSpeakers. Здесь можно изучить детали и управлять своей записью на участие."
         action={
           <Link
             className="rounded-md border border-oxford/15 bg-white px-4 py-2 text-sm font-semibold text-oxford"

@@ -17,7 +17,7 @@ export function PageHeader({ title, description, action }: PageHeaderProps) {
           </p>
         ) : null}
       </div>
-      {action ? <div className="shrink-0">{action}</div> : null}
+      {action ? <div className="w-full shrink-0 md:w-auto">{action}</div> : null}
     </header>
   );
 }

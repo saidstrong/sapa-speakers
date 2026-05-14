@@ -19,8 +19,16 @@ export default function TeamApplicationPage() {
         }
       />
       <EmptyState
-        title="Форма появится после подключения профилей и CV"
-        description="В следующих фазах здесь будет заявка с желаемой должностью, мотивацией, опытом, навыками и загрузкой CV."
+        title="Командные роли рассматриваются через волонтёрский профиль"
+        description="Сейчас безопасный путь такой: подайте волонтёрскую заявку, создайте аккаунт и дождитесь решения команды. Расширенные командные анкеты и загрузка CV будут добавлены отдельно."
+        action={
+          <Link
+            className="rounded-md border border-oxford/15 bg-white px-4 py-2 text-sm font-semibold text-oxford transition hover:border-orange/40 hover:text-orange"
+            href="/join"
+          >
+            Открыть анкету волонтёра
+          </Link>
+        }
       />
     </>
   );

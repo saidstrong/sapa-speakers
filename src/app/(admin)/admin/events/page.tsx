@@ -11,7 +11,7 @@ export default async function AdminEventsPage() {
     <>
       <PageHeader
         title="События и проекты"
-        description="Внутренние активности SapaSpeakers: встречи, проекты, обучения и организационные мероприятия. В Phase 3A здесь ведётся только административное управление."
+        description="Внутренние активности SapaSpeakers: встречи, проекты, обучения и организационные мероприятия. Здесь команда создаёт события, публикует их и открывает детали участников."
         action={
           <Link
             className="rounded-md bg-orange px-4 py-2 text-sm font-semibold text-oxford"

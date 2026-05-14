@@ -5,6 +5,9 @@ import { getCurrentUser } from "@/lib/auth/current-user";
 import { RU } from "@/lib/constants/ru";
 import { register } from "./actions";
 
+const inputClassName =
+  "mt-2 w-full rounded-md border border-oxford/15 px-3 py-2 text-sm outline-none transition focus:border-orange focus:ring-2 focus:ring-orange/20";
+
 type RegisterPageProps = {
   searchParams?: Promise<{
     status?: string;
@@ -42,7 +45,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
         <label className="block text-sm font-semibold text-oxford md:col-span-2">
           ФИО
           <input
-            className="mt-2 w-full rounded-md border border-oxford/15 px-3 py-2"
+            className={inputClassName}
             name="full_name"
             placeholder="Имя и фамилия"
             required
@@ -52,7 +55,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
         <label className="block text-sm font-semibold text-oxford">
           Email
           <input
-            className="mt-2 w-full rounded-md border border-oxford/15 px-3 py-2"
+            className={inputClassName}
             name="email"
             placeholder="name@example.com"
             required
@@ -62,7 +65,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
         <label className="block text-sm font-semibold text-oxford">
           Телефон
           <input
-            className="mt-2 w-full rounded-md border border-oxford/15 px-3 py-2"
+            className={inputClassName}
             name="phone"
             placeholder="+7..."
             type="tel"
@@ -71,7 +74,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
         <label className="block text-sm font-semibold text-oxford">
           Пароль
           <input
-            className="mt-2 w-full rounded-md border border-oxford/15 px-3 py-2"
+            className={inputClassName}
             minLength={8}
             name="password"
             placeholder="Минимум 8 символов"
@@ -82,7 +85,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
         <label className="block text-sm font-semibold text-oxford">
           Повторите пароль
           <input
-            className="mt-2 w-full rounded-md border border-oxford/15 px-3 py-2"
+            className={inputClassName}
             minLength={8}
             name="password_confirm"
             placeholder="Повторите пароль"
@@ -91,12 +94,15 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
           />
         </label>
         <button
-          className="rounded-md bg-orange px-4 py-2 font-semibold text-oxford md:col-span-2"
+          className="rounded-md bg-orange px-4 py-2 font-semibold text-oxford transition hover:bg-orange/90 md:col-span-2"
           type="submit"
         >
           {RU.buttons.register}
         </button>
-        <Link className="text-sm font-medium text-oxford md:col-span-2" href="/login">
+        <Link
+          className="text-sm font-medium text-oxford underline-offset-4 hover:underline md:col-span-2"
+          href="/login"
+        >
           Уже есть аккаунт? Войти
         </Link>
       </form>

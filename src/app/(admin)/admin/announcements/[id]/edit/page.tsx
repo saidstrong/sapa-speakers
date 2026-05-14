@@ -27,7 +27,7 @@ export default async function EditAnnouncementPage({
     <>
       <PageHeader
         title="Редактирование объявления"
-        description="Обновите заголовок, текст и статус объявления. Удаление не входит в эту фазу."
+        description="Обновите заголовок, текст и статус объявления. Опубликованные записи видны волонтёрам в личном кабинете."
         action={
           <Link
             className="rounded-md border border-oxford/15 bg-white px-4 py-2 text-sm font-semibold text-oxford"

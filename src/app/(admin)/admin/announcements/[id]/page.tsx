@@ -74,7 +74,7 @@ export default async function AnnouncementDetailPage({
     <>
       <PageHeader
         title={announcement.title}
-        description="Карточка внутреннего объявления. Удаление в этой фазе не предусмотрено."
+        description="Карточка внутреннего объявления. Здесь можно проверить статус, текст и перейти к редактированию."
         action={
           <div className="flex flex-wrap gap-3">
             <Link
