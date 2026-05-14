@@ -2,8 +2,10 @@ import Link from "next/link";
 import { EventRegistrationList } from "@/components/events/event-registration-list";
 import { EventStatusBadge } from "@/components/events/event-status-badge";
 import { PageHeader } from "@/components/ui/page-header";
+import { listEventAttendanceForAdmin } from "@/lib/queries/event-attendance";
 import { listEventRegistrationsForAdmin } from "@/lib/queries/event-registrations";
 import { getEventDetail } from "@/lib/queries/events";
+import { markEventAttendance } from "./attendance-actions";
 
 type EventDetailPageProps = {
   params: Promise<{
@@ -66,16 +68,18 @@ export default async function EventDetailPage({
 }: EventDetailPageProps) {
   const { id } = await params;
   const result = await searchParams;
-  const [event, registrations] = await Promise.all([
+  const [event, registrations, attendanceRecords] = await Promise.all([
     getEventDetail(id),
-    listEventRegistrationsForAdmin(id)
+    listEventRegistrationsForAdmin(id),
+    listEventAttendanceForAdmin(id)
   ]);
+  const attendanceAction = markEventAttendance.bind(null, event.id);
 
   return (
     <>
       <PageHeader
         title={event.title}
-        description="Карточка внутреннего события или проекта. В этой фазе доступны только просмотр и редактирование основных полей."
+        description="Карточка внутреннего события или проекта. Здесь можно редактировать основные поля и отмечать посещаемость зарегистрированных участников."
         action={
           <div className="flex flex-wrap gap-3">
             <Link
@@ -140,12 +144,17 @@ export default async function EventDetailPage({
         </Section>
 
         <Section title="Участники">
-          <EventRegistrationList registrations={registrations} />
+          <EventRegistrationList
+            attendanceAction={attendanceAction}
+            attendanceRecords={attendanceRecords}
+            registrations={registrations}
+          />
         </Section>
 
         <section className="rounded-lg border border-vista/40 bg-vista/15 p-4 text-sm leading-6 text-oxford">
-          Посещаемость, волонтёрские часы, сертификаты и достижения не входят в Phase
-          3C.
+          Посещаемость в Phase 4A фиксирует только статус участника: был, не был или
+          уважительная причина. Волонтёрские часы, сертификаты, достижения и
+          аналитика пока не создаются.
         </section>
       </div>
     </>

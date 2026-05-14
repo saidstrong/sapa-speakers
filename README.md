@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 3D: volunteer-facing my registrations surface.
+Phase 4A: attendance foundation v1.
 
 This phase includes:
 
@@ -68,8 +68,10 @@ This phase includes:
 - volunteer self-service registration and cancellation for published events
 - admin event detail participant list
 - volunteer-facing `/app/applications` view of the current user's own project registrations
+- attendance table for registered event participants
+- admin attendance marking for registered participants with `attended`, `absent`, and `excused` statuses
 
-Role assignment UI, public event pages, attendance, project applications with moderation, certificates, achievements, storage, notifications, and audit logs are intentionally not implemented yet.
+Role assignment UI, public event pages, volunteer hours, project applications with moderation, certificates, achievements, storage, notifications, analytics, and audit logs are intentionally not implemented yet.
 
 ## Supabase Migration
 
@@ -89,9 +91,10 @@ supabase/migrations/0004_events_foundation.sql
 supabase/migrations/0005_fix_events_grants.sql
 supabase/migrations/0006_published_events_app_access.sql
 supabase/migrations/0007_event_registrations.sql
+supabase/migrations/0008_event_attendance.sql
 ```
 
-The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, and `public.event_registrations`, enable RLS, keep anonymous users away from private profile/volunteer/event data, allow admin-capable authenticated users to review public volunteer applications and manage internal events, allow authenticated volunteers to view only published events, and allow active volunteers to manage and view their own event registration.
+The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, and `public.event_attendance`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance data, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, and mark attendance, allow authenticated volunteers to view only published events, and allow active volunteers to manage and view their own event registration.
 
 ## Auth Setup Notes
 
@@ -208,6 +211,24 @@ http://localhost:3000/app/projects/[id]
 ```
 
 Users without a linked volunteer row see an approval-pending message. Volunteers with no registrations see a simple empty state pointing them back to the projects section. Attendance, volunteer hours, certificates, achievements, reminders, and analytics are intentionally deferred.
+
+## Marking Event Attendance
+
+Phase 4A lets admin-capable users open:
+
+```text
+http://localhost:3000/admin/events/[id]
+```
+
+The participants section shows active registered participants and lets an admin mark or update attendance with one of three statuses:
+
+- `attended` — был
+- `absent` — не был
+- `excused` — уважительная причина
+
+Attendance is saved per event and volunteer. The action is server-side, checks that the participant has an active registration for that event, and does not delete attendance records.
+
+Volunteer hours, contribution history, certificates, achievements, QR check-in, public attendance pages, reminders, and analytics are intentionally deferred.
 
 ## Phase 2B Manual QA Checklist
 
