@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 4A: attendance foundation v1.
+Phase 4B: admin attendance register.
 
 This phase includes:
 
@@ -70,6 +70,7 @@ This phase includes:
 - volunteer-facing `/app/applications` view of the current user's own project registrations
 - attendance table for registered event participants
 - admin attendance marking for registered participants with `attended`, `absent`, and `excused` statuses
+- central read-only `/admin/attendance` register for marked attendance records
 
 Role assignment UI, public event pages, volunteer hours, project applications with moderation, certificates, achievements, storage, notifications, analytics, and audit logs are intentionally not implemented yet.
 
@@ -229,6 +230,24 @@ The participants section shows active registered participants and lets an admin 
 Attendance is saved per event and volunteer. The action is server-side, checks that the participant has an active registration for that event, and does not delete attendance records.
 
 Volunteer hours, contribution history, certificates, achievements, QR check-in, public attendance pages, reminders, and analytics are intentionally deferred.
+
+## Viewing The Attendance Register
+
+Phase 4B lets admin-capable users open:
+
+```text
+http://localhost:3000/admin/attendance
+```
+
+The page is a read-only operational register for already marked attendance across events. It shows the event, event date/time, volunteer, attendance status, marking time, the profile that marked attendance when available, notes, and links back to the event and volunteer detail pages.
+
+Attendance is still marked from event detail pages:
+
+```text
+http://localhost:3000/admin/events/[id]
+```
+
+The register supports lightweight server-side filtering by attendance status and search by event title, volunteer name, or email. Volunteer hours, contribution history, certificates, achievements, QR check-in, public attendance pages, reminders, and analytics remain deferred.
 
 ## Phase 2B Manual QA Checklist
 
