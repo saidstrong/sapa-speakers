@@ -103,6 +103,12 @@ export const sidebarItems = [
     permissions: ["upload_certificates", "confirm_certificates"]
   },
   {
+    title: "Достижения",
+    href: "/admin/badges",
+    zone: "admin",
+    permissions: ["manage_achievements"]
+  },
+  {
     title: "Роли и доступ",
     href: "/admin/roles",
     zone: "admin",

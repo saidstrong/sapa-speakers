@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 6B: certificate management detail and revoke workflow.
+Phase 7A: achievement records foundation.
 
 This phase includes:
 
@@ -81,8 +81,11 @@ This phase includes:
 - admin certificate detail pages
 - certificate revocation with a recorded reason
 - revoked certificate status visible to volunteers
+- achievement records for volunteers
+- admin achievement awarding from volunteer detail pages
+- admin and volunteer achievement record views
 
-Role assignment UI, public event pages, certificate PDF generation, certificate storage, QR verification, public certificate verification, achievements, notifications, analytics, rewards, and audit logs are intentionally not implemented yet.
+Role assignment UI, public event pages, certificate PDF generation, certificate storage, QR verification, public certificate verification, automated achievement rules, points, levels, leaderboards, notifications, analytics, rewards, and audit logs are intentionally not implemented yet.
 
 ## Supabase Migration
 
@@ -105,9 +108,10 @@ supabase/migrations/0007_event_registrations.sql
 supabase/migrations/0008_event_attendance.sql
 supabase/migrations/0009_volunteer_contributions.sql
 supabase/migrations/0010_certificates.sql
+supabase/migrations/0011_achievements.sql
 ```
 
-The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, `public.event_attendance`, `public.volunteer_contributions`, and `public.certificates`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance/contribution/certificate data, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, mark attendance, award contribution hours, and issue certificate records, allow authenticated volunteers to view only published events, and allow active volunteers to manage and view their own event registration, contribution history, and certificate records.
+The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, `public.event_attendance`, `public.volunteer_contributions`, `public.certificates`, and `public.achievements`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance/contribution/certificate/achievement data, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, mark attendance, award contribution hours, issue certificate records, and award achievement records, allow authenticated volunteers to view only published events, and allow active volunteers to manage and view their own event registration, contribution history, certificate records, and achievement records.
 
 ## Auth Setup Notes
 
@@ -334,6 +338,30 @@ Admins can inspect certificate metadata, issuing context, linked volunteer detai
 Volunteers see revoked certificates clearly in their own certificate list, including revocation date and reason when available.
 
 PDF generation, Supabase Storage, QR verification, public certificate verification pages, templates/images, automated issuing rules, emails, achievements, and analytics are still deferred.
+
+## Awarding Achievement Records
+
+Phase 7A lets admin-capable users award simple achievement and badge records from:
+
+```text
+http://localhost:3000/admin/volunteers/[id]
+```
+
+Admins can enter a title, achievement type, and optional description. The record is stored as `awarded` and linked to the volunteer and awarding admin profile.
+
+Admins can view all achievement records at:
+
+```text
+http://localhost:3000/admin/badges
+```
+
+Volunteers can view their own achievements together with contribution history at:
+
+```text
+http://localhost:3000/app/achievements
+```
+
+Automated achievement rules, points, levels, leaderboards, public achievement pages, notifications, rewards, and analytics are intentionally deferred.
 
 ## Phase 2B Manual QA Checklist
 

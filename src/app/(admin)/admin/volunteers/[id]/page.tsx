@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ApplicationStatusBadge } from "@/components/applications/application-status-badge";
+import { AchievementForm } from "@/components/achievements/achievement-form";
+import { AchievementsTable } from "@/components/achievements/achievements-table";
 import { CertificateForm } from "@/components/certificates/certificate-form";
 import { CertificatesTable } from "@/components/certificates/certificates-table";
 import { ContributionHistoryTable } from "@/components/contributions/contribution-history-table";
@@ -10,9 +12,11 @@ import {
   volunteerStatusLabels
 } from "@/components/volunteers/volunteer-status-badge";
 import { getRoleLabel } from "@/lib/auth/roles";
+import { listVolunteerAchievementsForAdmin } from "@/lib/queries/achievements";
 import { listVolunteerCertificatesForAdmin } from "@/lib/queries/certificates";
 import { getVolunteerContributionHistoryForAdmin } from "@/lib/queries/contributions";
 import { getVolunteerDetail, volunteerStatuses } from "@/lib/queries/volunteers";
+import { awardAchievement } from "./achievement-actions";
 import { issueCertificate } from "./certificate-actions";
 import { updateVolunteer } from "./actions";
 
@@ -73,11 +77,13 @@ export default async function VolunteerDetailPage({
 }: VolunteerDetailPageProps) {
   const { id } = await params;
   const result = await searchParams;
-  const [volunteer, contributionHistory, certificates] = await Promise.all([
+  const [volunteer, contributionHistory, certificates, achievements] = await Promise.all([
     getVolunteerDetail(id),
     getVolunteerContributionHistoryForAdmin(id),
-    listVolunteerCertificatesForAdmin(id)
+    listVolunteerCertificatesForAdmin(id),
+    listVolunteerAchievementsForAdmin(id)
   ]);
+  const achievementAction = awardAchievement.bind(null, volunteer.id);
   const certificateAction = issueCertificate.bind(null, volunteer.id);
   const updateAction = updateVolunteer.bind(null, volunteer.id);
 
@@ -151,6 +157,31 @@ export default async function VolunteerDetailPage({
             totalHours={contributionHistory.summary.totalHours}
           />
         </section>
+
+        <Section title="Достижения">
+          <div className="grid gap-6">
+            <div>
+              <h3 className="text-base font-semibold text-oxford">
+                Выдать достижение
+              </h3>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+                Создаётся ручная запись достижения или бейджа. Автоматические
+                правила, баллы, уровни и рейтинги будут добавлены позже.
+              </p>
+            </div>
+            <AchievementForm action={achievementAction} />
+            <div>
+              <h3 className="mb-4 text-base font-semibold text-oxford">
+                Выданные достижения
+              </h3>
+              <AchievementsTable
+                achievements={achievements}
+                emptyDescription="У этого волонтёра пока нет достижений."
+                showAwarder
+              />
+            </div>
+          </div>
+        </Section>
 
         <Section title="Сертификаты">
           <div className="grid gap-6">
