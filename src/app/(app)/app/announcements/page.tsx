@@ -1,12 +1,18 @@
-import { EmptyState } from "@/components/ui/empty-state";
+import { AnnouncementsList } from "@/components/announcements/announcements-list";
 import { PageHeader } from "@/components/ui/page-header";
-import { RU } from "@/lib/constants/ru";
+import { listPublishedAnnouncements } from "@/lib/queries/announcements";
 
-export default function AnnouncementsPage() {
+export default async function AnnouncementsPage() {
+  const announcements = await listPublishedAnnouncements();
+
   return (
     <>
-      <PageHeader title="Объявления" description="Сообщения организации и проектные объявления." />
-      <EmptyState title="Объявления" description={RU.emptyStates.announcements} />
+      <PageHeader
+        title="Объявления"
+        description="Внутренние опубликованные сообщения SapaSpeakers для волонтёров."
+      />
+
+      <AnnouncementsList announcements={announcements} />
     </>
   );
 }

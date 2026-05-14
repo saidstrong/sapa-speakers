@@ -79,6 +79,12 @@ export const sidebarItems = [
     permissions: ["view_admin"]
   },
   {
+    title: "Объявления",
+    href: "/admin/announcements",
+    zone: "admin",
+    permissions: ["view_admin"]
+  },
+  {
     title: "Проекты",
     href: "/admin/projects",
     zone: "admin",

@@ -420,6 +420,21 @@ Users can view their email, role, contact fields, account creation date, and vol
 
 Email changes, role editing, volunteer status changes, avatar/storage features, notification preferences, and password settings are intentionally deferred.
 
+## Internal Announcements
+
+Phase 9B adds a simple internal announcement board:
+
+```text
+http://localhost:3000/admin/announcements
+http://localhost:3000/app/announcements
+```
+
+Admin-capable users can create announcement drafts, publish announcements, archive them, and inspect announcement detail pages. Publishing sets `published_at`; moving an announcement back to draft or archive clears `published_at`.
+
+Authenticated volunteers see only published announcements in the app, newest published first.
+
+Email or push notifications, comments, reactions, read receipts, targeting, attachments, public announcement pages, and announcement analytics are intentionally deferred.
+
 ## Phase 2B Manual QA Checklist
 
 1. Submit a test volunteer application through `/join` or use an existing pending application.
