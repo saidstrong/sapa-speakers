@@ -19,7 +19,9 @@ export default async function AdminBadgesPage() {
 
       <AchievementsTable
         achievements={achievements}
+        detailBasePath="/admin/badges"
         emptyDescription="Пока нет выданных достижений. Выдать достижение можно со страницы волонтёра."
+        showDetailAction
         showAwarder
         showVolunteer
       />

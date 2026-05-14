@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 7A: achievement records foundation.
+Phase 7B: achievement management detail and revoke workflow.
 
 This phase includes:
 
@@ -84,6 +84,9 @@ This phase includes:
 - achievement records for volunteers
 - admin achievement awarding from volunteer detail pages
 - admin and volunteer achievement record views
+- admin achievement detail pages
+- achievement revocation with a recorded reason
+- revoked achievement status visible to volunteers
 
 Role assignment UI, public event pages, certificate PDF generation, certificate storage, QR verification, public certificate verification, automated achievement rules, points, levels, leaderboards, notifications, analytics, rewards, and audit logs are intentionally not implemented yet.
 
@@ -362,6 +365,20 @@ http://localhost:3000/app/achievements
 ```
 
 Automated achievement rules, points, levels, leaderboards, public achievement pages, notifications, rewards, and analytics are intentionally deferred.
+
+## Managing Achievement Records
+
+Phase 7B adds admin achievement detail pages:
+
+```text
+http://localhost:3000/admin/badges/[id]
+```
+
+Admins can inspect achievement metadata, awarding context, linked volunteer details, and revocation state. Awarded achievements can be revoked with a required reason. Revocation updates the existing achievement record to `revoked`, stores `revoked_at`, and keeps the record visible instead of deleting it.
+
+Volunteers see revoked achievements clearly in their own achievements section, including revocation date and reason when available.
+
+Automated achievement rules, points, levels, leaderboards, public achievement pages, notifications, rewards, and analytics are still deferred.
 
 ## Phase 2B Manual QA Checklist
 

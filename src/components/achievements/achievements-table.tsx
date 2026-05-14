@@ -8,6 +8,8 @@ type AchievementsTableProps = {
   achievements: readonly AchievementListItem[];
   emptyDescription: string;
   emptyTitle?: string;
+  detailBasePath?: string;
+  showDetailAction?: boolean;
   showAwarder?: boolean;
   showRevocationDetails?: boolean;
   showVolunteer?: boolean;
@@ -34,8 +36,10 @@ function displayProfile(profile: AchievementListItem["volunteerProfile"]) {
 
 export function AchievementsTable({
   achievements,
+  detailBasePath,
   emptyDescription,
   emptyTitle = "Достижения",
+  showDetailAction = false,
   showAwarder = false,
   showRevocationDetails = true,
   showVolunteer = false
@@ -66,6 +70,9 @@ export function AchievementsTable({
               ) : null}
               {showAwarder ? <th className="px-4 py-3">Выдал</th> : null}
               <th className="px-4 py-3">Описание</th>
+              {showDetailAction && detailBasePath ? (
+                <th className="px-4 py-3">Действие</th>
+              ) : null}
             </tr>
           </thead>
           <tbody className="divide-y divide-oxford/10">
@@ -79,7 +86,16 @@ export function AchievementsTable({
                 }
               >
                 <td className="px-4 py-4 font-semibold text-oxford">
-                  {achievement.title}
+                  {detailBasePath ? (
+                    <Link
+                      className="transition hover:text-orange"
+                      href={`${detailBasePath}/${achievement.id}`}
+                    >
+                      {achievement.title}
+                    </Link>
+                  ) : (
+                    achievement.title
+                  )}
                 </td>
                 {showVolunteer ? (
                   <td className="px-4 py-4">
@@ -134,6 +150,16 @@ export function AchievementsTable({
                 <td className="max-w-md px-4 py-4 text-muted">
                   {achievement.description ?? "Нет"}
                 </td>
+                {showDetailAction && detailBasePath ? (
+                  <td className="px-4 py-4">
+                    <Link
+                      className="rounded-md border border-oxford/15 px-3 py-2 text-sm font-semibold text-oxford transition hover:border-orange/40 hover:text-orange"
+                      href={`${detailBasePath}/${achievement.id}`}
+                    >
+                      Открыть
+                    </Link>
+                  </td>
+                ) : null}
               </tr>
             ))}
           </tbody>

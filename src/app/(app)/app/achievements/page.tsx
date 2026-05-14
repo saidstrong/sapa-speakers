@@ -33,7 +33,7 @@ export default async function AchievementsPage() {
               <h2 className="text-lg font-semibold text-oxford">Мои достижения</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
                 Здесь отображаются достижения и бейджи, вручную подтверждённые
-                командой.
+                командой. Отозванные достижения отмечаются отдельным статусом.
               </p>
             </div>
             <AchievementsTable

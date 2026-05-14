@@ -1,6 +1,8 @@
+import { notFound } from "next/navigation";
 import { requireAdminUser, requireCurrentUser } from "@/lib/auth/current-user";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
+  achievementIdSchema,
   achievementStatuses,
   achievementTypes,
   type AchievementStatus,
@@ -44,6 +46,17 @@ export type CurrentVolunteerAchievements = {
   achievements: AchievementListItem[];
   volunteer: AchievementVolunteer | null;
 };
+
+export type RevokeAchievementResult =
+  | {
+      status: "revoked";
+      achievementId: string;
+      volunteerId: string;
+    }
+  | {
+      status: "already_revoked" | "invalid_reason" | "not_found";
+      volunteerId?: string;
+    };
 
 type AchievementRow = Omit<
   AchievementRecord,
@@ -167,6 +180,42 @@ export async function listAchievementsForAdmin(): Promise<AchievementListItem[]>
   );
 }
 
+export async function getAchievementForAdmin(id: string): Promise<AchievementListItem> {
+  await requireAdminUser();
+
+  const parsedId = achievementIdSchema.safeParse(id);
+
+  if (!parsedId.success) {
+    notFound();
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  const { data, error } = await supabase
+    .from("achievements")
+    .select(achievementFields)
+    .eq("id", parsedId.data)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("Не удалось загрузить достижение.");
+  }
+
+  if (!data) {
+    notFound();
+  }
+
+  const [achievement] = await hydrateAchievements(supabase, [
+    normalizeAchievement(data as AchievementRow)
+  ]);
+
+  if (!achievement) {
+    notFound();
+  }
+
+  return achievement;
+}
+
 export async function listVolunteerAchievementsForAdmin(
   volunteerId: string
 ): Promise<AchievementListItem[]> {
@@ -274,4 +323,89 @@ export async function awardAchievementForAdmin({
   }
 
   return data.id as string;
+}
+
+export async function revokeAchievementForAdmin({
+  achievementId,
+  revocationReason
+}: {
+  achievementId: string;
+  revocationReason: string;
+}): Promise<RevokeAchievementResult> {
+  await requireAdminUser();
+
+  const parsedId = achievementIdSchema.safeParse(achievementId);
+  const trimmedReason = revocationReason.trim();
+
+  if (!parsedId.success) {
+    return {
+      status: "not_found"
+    };
+  }
+
+  if (trimmedReason.length === 0) {
+    return {
+      status: "invalid_reason"
+    };
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  const { data: achievement, error: achievementError } = await supabase
+    .from("achievements")
+    .select("id, volunteer_id, status")
+    .eq("id", parsedId.data)
+    .maybeSingle();
+
+  if (achievementError) {
+    throw new Error("Не удалось проверить достижение перед отзывом.");
+  }
+
+  if (!achievement) {
+    return {
+      status: "not_found"
+    };
+  }
+
+  const achievementRecord = achievement as {
+    id: string;
+    volunteer_id: string;
+    status: string;
+  };
+
+  if (achievementRecord.status === "revoked") {
+    return {
+      status: "already_revoked",
+      volunteerId: achievementRecord.volunteer_id
+    };
+  }
+
+  const { data: updatedAchievement, error: updateError } = await supabase
+    .from("achievements")
+    .update({
+      status: "revoked",
+      revoked_at: new Date().toISOString(),
+      revocation_reason: trimmedReason
+    })
+    .eq("id", parsedId.data)
+    .eq("status", "awarded")
+    .select("id, volunteer_id")
+    .maybeSingle();
+
+  if (updateError) {
+    throw new Error("Не удалось отозвать достижение.");
+  }
+
+  if (!updatedAchievement) {
+    return {
+      status: "already_revoked",
+      volunteerId: achievementRecord.volunteer_id
+    };
+  }
+
+  return {
+    status: "revoked",
+    achievementId: updatedAchievement.id,
+    volunteerId: updatedAchievement.volunteer_id
+  };
 }

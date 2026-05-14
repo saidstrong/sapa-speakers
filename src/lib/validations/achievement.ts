@@ -14,6 +14,8 @@ export type AchievementType = (typeof achievementTypes)[number];
 
 export type AchievementStatus = (typeof achievementStatuses)[number];
 
+export const achievementIdSchema = z.string().uuid();
+
 function readString(value: FormDataEntryValue | null) {
   return typeof value === "string" ? value : "";
 }
@@ -38,10 +40,28 @@ export const achievementFormSchema = z.object({
 
 export type AchievementFormInput = z.infer<typeof achievementFormSchema>;
 
+export const achievementRevocationFormSchema = z.object({
+  revocation_reason: z
+    .string()
+    .trim()
+    .min(1, "Укажите причину отзыва достижения.")
+    .max(2000, "Причина отзыва не должна быть длиннее 2000 символов.")
+});
+
+export type AchievementRevocationFormInput = z.infer<
+  typeof achievementRevocationFormSchema
+>;
+
 export function parseAchievementFormData(formData: FormData) {
   return achievementFormSchema.safeParse({
     title: readString(formData.get("title")),
     achievement_type: readString(formData.get("achievement_type")),
     description: readString(formData.get("description"))
+  });
+}
+
+export function parseAchievementRevocationFormData(formData: FormData) {
+  return achievementRevocationFormSchema.safeParse({
+    revocation_reason: readString(formData.get("revocation_reason"))
   });
 }
