@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 10D: entry routing and UX edge-case polish.
+Phase 10E: auth-first join flow and contact polish.
 
 This phase includes:
 
@@ -51,9 +51,9 @@ This phase includes:
 - automatic `profiles` creation after auth signup
 - `volunteers` table for approved applicants with matching profiles
 - server-side protection for `/app/*` and `/admin/*`
-- public `/join` application form
+- public `/join` explanation page and authenticated `/app/join` volunteer application form
 - server-side Zod validation
-- anonymous insert into Supabase through RLS
+- authenticated volunteer application insert into Supabase through RLS
 - admin listing and detail review pages for public volunteer applications
 - server-side approve/decline actions for admin-capable roles
 - admin volunteer directory for approved/linked volunteer records
@@ -94,8 +94,10 @@ This phase includes:
 - internal announcements managed by admins and read by authenticated volunteers
 - launch UI polish for navigation, page copy, empty states, focus states, and mobile table readability
 - role/session-aware entry routing from `/`, `/login`, `/register`, and post-login auth actions
-- state-aware `/join` handling for anonymous applicants, pending/non-active users, active volunteers, and admins
+- state-aware `/app/join` handling for pending/non-active users, active volunteers, and admins
 - clearer public project navigation and volunteer account pending state copy
+- auth-first volunteer application flow through `/app/join`
+- official Instagram contact link and no placeholder WhatsApp/Telegram contact data
 
 Role assignment UI, public event pages, certificate PDF generation, certificate storage, QR verification, public certificate verification, automated achievement rules, points, levels, leaderboards, notifications, analytics, exports, rewards, and audit logs are intentionally not implemented yet.
 
@@ -123,9 +125,10 @@ supabase/migrations/0010_certificates.sql
 supabase/migrations/0011_achievements.sql
 supabase/migrations/0012_profile_self_update.sql
 supabase/migrations/0013_announcements.sql
+supabase/migrations/0014_authenticated_volunteer_applications.sql
 ```
 
-The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, `public.event_attendance`, `public.volunteer_contributions`, `public.certificates`, `public.achievements`, and `public.announcements`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance/contribution/certificate/achievement/announcement data, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, mark attendance, award contribution hours, issue certificate records, award achievement records, and manage announcements, allow authenticated volunteers to view only published events and announcements, and allow active volunteers to manage and view their own event registration, contribution history, certificate records, and achievement records. Profile self-update is limited to safe contact columns.
+The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, `public.event_attendance`, `public.volunteer_contributions`, `public.certificates`, `public.achievements`, and `public.announcements`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance/contribution/certificate/achievement/announcement data, allow authenticated users to submit pending volunteer applications from the app, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, mark attendance, award contribution hours, issue certificate records, award achievement records, and manage announcements, allow authenticated volunteers to view only published events and announcements, and allow active volunteers to manage and view their own event registration, contribution history, certificate records, and achievement records. Profile self-update is limited to safe contact columns.
 
 ## Auth Setup Notes
 
@@ -155,7 +158,7 @@ Admin-capable users can open:
 http://localhost:3000/admin/team-applications
 ```
 
-The page lists applications submitted through `/join`. A reviewer can open a detail page, approve the application, or decline it. Approval marks the application as `approved`.
+The page lists applications submitted through `/app/join`. A reviewer can open a detail page, approve the application, or decline it. Approval marks the application as `approved`.
 
 If a registered profile already exists with the same email, approval creates or updates one `public.volunteers` row for that profile and links it to the application. If no profile exists yet, the application remains approved, but the volunteer record waits until the applicant registers with the same email.
 
@@ -452,13 +455,25 @@ This phase does not change database schema, migrations, RLS policies, authentica
 
 ## Entry Routing And Edge-State Polish
 
-Phase 10D routes authenticated users away from public entry pages to the correct workspace, sends admin-capable users to `/admin`, keeps `/join` available to anonymous and non-active applicants, and replaces the application form with clear guidance for active volunteers and admins.
+Phase 10D routes authenticated users away from public entry pages to the correct workspace and sends admin-capable users to `/admin`.
 
 This phase does not change database schema, migrations, RLS policies, role request workflows, notifications, or seeded data.
 
+## Auth-First Join Flow
+
+Phase 10E makes `/join` a public explanation page. Guests create an account or log in first, then submit the volunteer application from:
+
+```text
+http://localhost:3000/app/join
+```
+
+The authenticated application action uses the current user's profile email when available and inserts a pending volunteer application through authenticated RLS. Anonymous users no longer receive insert access to `public.volunteer_applications`.
+
+This phase also adds the official Instagram contact link and keeps WhatsApp/Telegram marked as pending team approval. Certificate PDF upload, storage buckets, certificate file fields, notifications, and application self-status are still intentionally deferred.
+
 ## Phase 2B Manual QA Checklist
 
-1. Submit a test volunteer application through `/join` or use an existing pending application.
+1. Submit a test volunteer application through `/app/join` or use an existing pending application.
 2. In a separate account, register the same email if you want approval to create a linked volunteer card immediately.
 3. Sign in as an admin-capable user and open `/admin/team-applications`.
 4. Approve the application and confirm the result message matches the actual case: either the volunteer card is created or already exists, or the application is approved but the applicant still needs to register with the same email.
@@ -469,7 +484,7 @@ This phase does not change database schema, migrations, RLS policies, role reque
 9. Trigger at least one invalid update case if possible, and confirm the error message is shown without exposing internal details.
 10. Sign in as a non-admin user and confirm `/admin/volunteers` and `/admin/volunteers/[id]` remain blocked by admin route protection.
 
-## Testing The Public Application Form
+## Testing The Volunteer Application Form
 
 1. Apply the migration in Supabase.
 2. Fill `.env.local` with Supabase project values.
@@ -482,10 +497,10 @@ npm run dev
 4. Open:
 
 ```text
-http://localhost:3000/join
+http://localhost:3000/app/join
 ```
 
-5. Submit the form with ФИО, Email, and motivation. A successful submission redirects back to `/join?status=success`.
+5. Submit the form with ФИО and motivation. Email is taken from the authenticated profile when available. A successful submission redirects back to `/app/join?status=success`.
 
 ## Testing Auth Locally
 

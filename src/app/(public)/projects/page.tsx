@@ -32,7 +32,7 @@ export default async function PublicProjectsPage() {
               className="rounded-md border border-oxford/15 bg-white px-4 py-2 text-sm font-semibold text-oxford transition hover:border-orange/40 hover:text-orange"
               href="/join"
             >
-              Подать заявку
+              Как стать волонтёром
             </Link>
           </>
         }

@@ -15,7 +15,7 @@ const defaultActions: VolunteerNextAction[] = [
   {
     description: "Проверьте активные и отменённые записи на проекты.",
     href: "/app/applications",
-    title: "Мои записи"
+    title: "Мои записи на проекты"
   },
   {
     description: "Посмотрите подтверждённые часы и достижения.",

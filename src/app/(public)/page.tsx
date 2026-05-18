@@ -29,7 +29,7 @@ export default async function HomePage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href="/register"
+              href="/join"
               className="rounded-md bg-orange px-5 py-3 text-sm font-semibold text-oxford transition hover:bg-orange/90"
             >
               {RU.buttons.becomeVolunteer}
@@ -58,7 +58,7 @@ export default async function HomePage() {
       <div className="grid gap-4 md:grid-cols-3">
         <EmptyState
           title="Заявка и аккаунт"
-          description="Заполните анкету, создайте аккаунт и дождитесь решения команды. После одобрения появится волонтёрский профиль."
+          description="Создайте аккаунт, войдите в личный кабинет, заполните анкету волонтёра и дождитесь решения команды. После одобрения появится волонтёрский профиль."
         />
         <EmptyState
           title="Проекты и участие"

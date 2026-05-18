@@ -24,8 +24,8 @@ const volunteerStatusLabels: Record<string, string> = {
 
 const noVolunteerActions: VolunteerNextAction[] = [
   {
-    description: "Подайте заявку или проверьте требования для вступления в команду.",
-    href: "/join",
+    description: "Заполните анкету волонтёра из личного кабинета.",
+    href: "/app/join",
     title: "Подать заявку"
   },
   {
@@ -245,7 +245,7 @@ export default async function AppDashboardPage() {
 
           <EmptyState
             title="Профиль волонтёра ожидает подтверждения"
-            description="Ваш аккаунт создан, но волонтёрский профиль ещё не подтверждён. Если вы уже подали заявку, дождитесь решения команды."
+            description="Ваш аккаунт создан, но волонтёрский профиль ещё не подтверждён. Подайте заявку из личного кабинета или дождитесь решения команды, если уже отправили анкету."
           />
 
           <VolunteerNextActions actions={noVolunteerActions} title="Что можно сделать" />

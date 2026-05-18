@@ -31,7 +31,7 @@ export const sidebarItems = [
     permissions: ["view_app"]
   },
   {
-    title: "Мои записи",
+    title: "Мои записи на проекты",
     href: "/app/applications",
     zone: "app",
     permissions: ["view_app"]

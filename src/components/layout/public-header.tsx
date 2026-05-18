@@ -32,7 +32,7 @@ export function PublicHeader() {
           ))}
         </nav>
         <Link
-          href="/register"
+          href="/join"
           className="inline-flex w-fit items-center justify-center rounded-md bg-orange px-4 py-2 text-sm font-semibold text-oxford outline-none transition hover:bg-orange/90 focus-visible:ring-2 focus-visible:ring-orange/60 focus-visible:ring-offset-2"
         >
           {RU.buttons.becomeVolunteer}

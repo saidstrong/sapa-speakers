@@ -30,6 +30,17 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-5 py-10">
       <PageHeader title={RU.pages.register.title} description={RU.pages.register.description} />
+      <section className="mb-4 rounded-lg border border-vista/40 bg-vista/15 p-4 text-sm leading-6 text-oxford">
+        Аккаунт — первый шаг. После входа откройте личный кабинет и отправьте
+        заявку волонтёра.{" "}
+        <Link
+          className="font-semibold underline decoration-orange/60 underline-offset-4 hover:text-orange"
+          href="/join"
+        >
+          Подробнее о вступлении
+        </Link>
+        .
+      </section>
       {params?.status ? (
         <div
           className={
