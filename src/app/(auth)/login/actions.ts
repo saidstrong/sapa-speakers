@@ -2,6 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { getWorkspacePathForRoles } from "@/lib/auth/current-user";
+import { isRoleKey } from "@/lib/auth/roles";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const loginSchema = z.object({
@@ -16,6 +18,37 @@ function redirectWithStatus(message: string): never {
   });
 
   redirect(`/login?${params.toString()}`);
+}
+
+type SupabaseServerClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
+
+async function resolvePostLoginRedirectPath(
+  supabase: SupabaseServerClient,
+  userId: string | undefined
+) {
+  if (!userId) {
+    return "/app";
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Profile lookup after login failed", error);
+      return "/app";
+    }
+
+    const role = isRoleKey(data?.role) ? data.role : "volunteer";
+
+    return getWorkspacePathForRoles([role]);
+  } catch (error) {
+    console.error("Profile lookup after login failed", error);
+    return "/app";
+  }
 }
 
 export async function login(formData: FormData) {
@@ -37,11 +70,16 @@ export async function login(formData: FormData) {
     redirectWithStatus("Вход временно недоступен: не настроено подключение к Supabase.");
   }
 
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
     redirectWithStatus("Не удалось войти. Проверьте email и пароль.");
   }
 
-  redirect("/app");
+  const workspacePath = await resolvePostLoginRedirectPath(
+    supabase,
+    data.user?.id
+  );
+
+  redirect(workspacePath);
 }

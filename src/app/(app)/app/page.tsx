@@ -245,7 +245,7 @@ export default async function AppDashboardPage() {
 
           <EmptyState
             title="Профиль волонтёра ожидает подтверждения"
-            description="Ваш волонтёрский профиль ещё не подтверждён. Если вы уже подали заявку, дождитесь решения команды."
+            description="Ваш аккаунт создан, но волонтёрский профиль ещё не подтверждён. Если вы уже подали заявку, дождитесь решения команды."
           />
 
           <VolunteerNextActions actions={noVolunteerActions} title="Что можно сделать" />

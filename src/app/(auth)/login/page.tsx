@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import {
+  getCurrentUser,
+  getWorkspacePathForCurrentUser
+} from "@/lib/auth/current-user";
 import { RU } from "@/lib/constants/ru";
 import { login } from "./actions";
 
@@ -19,7 +22,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const currentUser = await getCurrentUser();
 
   if (currentUser.user) {
-    redirect("/app");
+    redirect(getWorkspacePathForCurrentUser(currentUser));
   }
 
   const params = await searchParams;

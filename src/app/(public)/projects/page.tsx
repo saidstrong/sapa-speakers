@@ -1,22 +1,32 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { getCurrentUser } from "@/lib/auth/current-user";
 import { RU } from "@/lib/constants/ru";
 
-export default function PublicProjectsPage() {
+export default async function PublicProjectsPage() {
+  const currentUser = await getCurrentUser();
+  const projectsHref = currentUser.user ? "/app/projects" : "/login";
+  const projectsLabel = currentUser.user
+    ? "Открыть проекты в кабинете"
+    : "Войти и открыть проекты";
+
   return (
     <>
-      <PageHeader title={RU.pages.projects.title} description={RU.pages.projects.description} />
+      <PageHeader
+        title={RU.pages.projects.title}
+        description="Это публичная информационная страница. Закрытый список проектов, запись на участие и рабочие данные доступны только в личном кабинете после входа."
+      />
       <EmptyState
-        title="Проекты доступны в личном кабинете"
-        description="Опубликованные проекты и запись на участие открываются после входа. Если вы ещё не подавали заявку, начните с анкеты волонтёра."
+        title="Публичная навигация по проектам"
+        description="Здесь нет закрытых данных участников или внутренних заявок. Чтобы просматривать опубликованные проекты и работать с участием, перейдите в кабинет."
         action={
           <>
             <Link
               className="rounded-md bg-orange px-4 py-2 text-sm font-semibold text-oxford transition hover:bg-orange/90"
-              href="/app/projects"
+              href={projectsHref}
             >
-              Открыть проекты
+              {projectsLabel}
             </Link>
             <Link
               className="rounded-md border border-oxford/15 bg-white px-4 py-2 text-sm font-semibold text-oxford transition hover:border-orange/40 hover:text-orange"

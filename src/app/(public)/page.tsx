@@ -1,10 +1,21 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
+import {
+  getCurrentUser,
+  getWorkspacePathForCurrentUser
+} from "@/lib/auth/current-user";
 import { RU } from "@/lib/constants/ru";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const currentUser = await getCurrentUser();
+
+  if (currentUser.user) {
+    redirect(getWorkspacePathForCurrentUser(currentUser));
+  }
+
   return (
     <div className="space-y-10">
       <section className="grid gap-8 rounded-lg bg-oxford p-8 text-white md:grid-cols-[1.3fr_0.7fr] md:p-12">

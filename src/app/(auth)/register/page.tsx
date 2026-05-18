@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import {
+  getCurrentUser,
+  getWorkspacePathForCurrentUser
+} from "@/lib/auth/current-user";
 import { RU } from "@/lib/constants/ru";
 import { register } from "./actions";
 
@@ -19,7 +22,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
   const currentUser = await getCurrentUser();
 
   if (currentUser.user) {
-    redirect("/app");
+    redirect(getWorkspacePathForCurrentUser(currentUser));
   }
 
   const params = await searchParams;

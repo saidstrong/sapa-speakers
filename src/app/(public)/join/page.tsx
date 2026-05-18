@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { getCurrentUser } from "@/lib/auth/current-user";
 import { RU } from "@/lib/constants/ru";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { submitVolunteerApplication } from "./actions";
 
 const languageOptions = [
@@ -39,26 +42,113 @@ type JoinPageProps = {
   }>;
 };
 
+async function hasActiveVolunteerRow(profileId: string) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("volunteers")
+      .select("id")
+      .eq("profile_id", profileId)
+      .eq("status", "active")
+      .maybeSingle();
+
+    if (error) {
+      console.error("Active volunteer lookup failed", error);
+      return false;
+    }
+
+    return Boolean(data);
+  } catch (error) {
+    console.error("Active volunteer lookup failed", error);
+    return false;
+  }
+}
+
 export default async function JoinPage({ searchParams }: JoinPageProps) {
+  const currentUser = await getCurrentUser();
   const params = await searchParams;
   const status = params?.status;
   const message = params?.message;
+  const isAuthenticated = Boolean(currentUser.user);
+  const isAdmin = isAuthenticated && currentUser.isAdmin;
+  const profileId = currentUser.profile?.id ?? currentUser.user?.id;
+  const isActiveVolunteer =
+    !isAdmin && profileId ? await hasActiveVolunteerRow(profileId) : false;
+  const defaultFullName =
+    currentUser.profile?.full_name ??
+    (typeof currentUser.user?.user_metadata.full_name === "string"
+      ? currentUser.user.user_metadata.full_name
+      : "");
+  const defaultEmail =
+    currentUser.profile?.email ?? currentUser.user?.email ?? "";
+  const defaultPhone = currentUser.profile?.phone ?? "";
+  const defaultTelegram = currentUser.profile?.telegram ?? "";
+  const pageHeader = (
+    <PageHeader
+      title={RU.pages.join.title}
+      description="Заполните короткую заявку, чтобы команда SapaSpeakers могла связаться с вами и пригласить к следующим шагам."
+      action={
+        <Link
+          href="/projects"
+          className="rounded-md border border-oxford/15 bg-white px-5 py-3 text-sm font-semibold text-oxford transition hover:border-orange"
+        >
+          {RU.buttons.viewProjects}
+        </Link>
+      }
+    />
+  );
+
+  if (isAdmin) {
+    return (
+      <div className="space-y-8">
+        {pageHeader}
+        <EmptyState
+          title="Заявки волонтёров"
+          description="Вы вошли как администратор. Управление заявками доступно в админ-панели."
+          action={
+            <>
+              <Link
+                className="rounded-md bg-orange px-4 py-2 text-sm font-semibold text-oxford transition hover:bg-orange/90"
+                href="/admin"
+              >
+                Открыть админ-панель
+              </Link>
+              <Link
+                className="rounded-md border border-oxford/15 bg-white px-4 py-2 text-sm font-semibold text-oxford transition hover:border-orange/40 hover:text-orange"
+                href="/app"
+              >
+                Личный кабинет
+              </Link>
+            </>
+          }
+        />
+      </div>
+    );
+  }
+
+  if (isActiveVolunteer) {
+    return (
+      <div className="space-y-8">
+        {pageHeader}
+        <EmptyState
+          title="Заявка не требуется"
+          description="Вы уже являетесь волонтёром SapaSpeakers."
+          action={
+            <Link
+              className="rounded-md bg-orange px-4 py-2 text-sm font-semibold text-oxford transition hover:bg-orange/90"
+              href="/app"
+            >
+              Перейти в личный кабинет
+            </Link>
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        title={RU.pages.join.title}
-        description="Заполните короткую заявку, чтобы команда SapaSpeakers могла связаться с вами и пригласить к следующим шагам."
-        action={
-          <Link
-            href="/projects"
-            className="rounded-md border border-oxford/15 bg-white px-5 py-3 text-sm font-semibold text-oxford transition hover:border-orange"
-          >
-            {RU.buttons.viewProjects}
-          </Link>
-        }
-      />
-
+      {pageHeader}
       <section className="rounded-lg border border-vista/30 bg-vista/15 p-5 text-sm leading-6 text-oxford">
         <p className="font-semibold">Как это работает</p>
         <p className="mt-2 text-muted">
@@ -104,6 +194,7 @@ export default async function JoinPage({ searchParams }: JoinPageProps) {
             <input
               className={inputClassName}
               name="full_name"
+              defaultValue={defaultFullName}
               required
               maxLength={160}
               placeholder="Введите ваше полное имя"
@@ -116,6 +207,7 @@ export default async function JoinPage({ searchParams }: JoinPageProps) {
               className={inputClassName}
               name="email"
               type="email"
+              defaultValue={defaultEmail}
               required
               maxLength={254}
               placeholder="name@example.com"
@@ -127,6 +219,7 @@ export default async function JoinPage({ searchParams }: JoinPageProps) {
             <input
               className={inputClassName}
               name="phone"
+              defaultValue={defaultPhone}
               maxLength={40}
               placeholder="+7..."
             />
@@ -137,6 +230,7 @@ export default async function JoinPage({ searchParams }: JoinPageProps) {
             <input
               className={inputClassName}
               name="telegram"
+              defaultValue={defaultTelegram}
               maxLength={64}
               placeholder="@username"
             />

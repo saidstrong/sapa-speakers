@@ -24,6 +24,14 @@ export type CurrentUser = {
   isAdmin: boolean;
 };
 
+export function getWorkspacePathForRoles(roles: readonly RoleKey[]) {
+  return hasAdminAccess(roles) ? "/admin" : "/app";
+}
+
+export function getWorkspacePathForCurrentUser(currentUser: Pick<CurrentUser, "isAdmin">) {
+  return currentUser.isAdmin ? "/admin" : "/app";
+}
+
 export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
   const supabase = await createSupabaseServerClient();
   const {

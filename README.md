@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 10A: launch UI/UX polish.
+Phase 10D: entry routing and UX edge-case polish.
 
 This phase includes:
 
@@ -93,6 +93,9 @@ This phase includes:
 - safe authenticated profile contact updates on `/app/profile`
 - internal announcements managed by admins and read by authenticated volunteers
 - launch UI polish for navigation, page copy, empty states, focus states, and mobile table readability
+- role/session-aware entry routing from `/`, `/login`, `/register`, and post-login auth actions
+- state-aware `/join` handling for anonymous applicants, pending/non-active users, active volunteers, and admins
+- clearer public project navigation and volunteer account pending state copy
 
 Role assignment UI, public event pages, certificate PDF generation, certificate storage, QR verification, public certificate verification, automated achievement rules, points, levels, leaderboards, notifications, analytics, exports, rewards, and audit logs are intentionally not implemented yet.
 
@@ -446,6 +449,12 @@ Email or push notifications, comments, reactions, read receipts, targeting, atta
 Phase 10A improves the launch experience across public, volunteer, and admin surfaces. The polish pass updates Russian-first page copy, action-oriented empty states, sidebar labels, keyboard focus states, and mobile table readability.
 
 This phase does not change database schema, migrations, RLS policies, authentication behavior, Supabase queries, or business workflows.
+
+## Entry Routing And Edge-State Polish
+
+Phase 10D routes authenticated users away from public entry pages to the correct workspace, sends admin-capable users to `/admin`, keeps `/join` available to anonymous and non-active applicants, and replaces the application form with clear guidance for active volunteers and admins.
+
+This phase does not change database schema, migrations, RLS policies, role request workflows, notifications, or seeded data.
 
 ## Phase 2B Manual QA Checklist
 
