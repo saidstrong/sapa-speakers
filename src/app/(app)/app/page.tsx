@@ -4,6 +4,7 @@ import {
   VolunteerNextActions,
   type VolunteerNextAction
 } from "@/components/app/volunteer-next-actions";
+import { ProfileAvatarPreview } from "@/components/profile/avatar-upload-form";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -119,12 +120,22 @@ function VolunteerStatusSection({
 }) {
   return (
     <section className="rounded-lg border border-oxford/10 bg-white p-6 shadow-sm">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-oxford">Профиль волонтёра</h2>
-          <p className="mt-2 text-sm leading-6 text-muted">
-            {displayName(dashboard)} · {dashboard.profile.email}
-          </p>
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <ProfileAvatarPreview
+            avatarUrl={dashboard.profile.avatarUrl}
+            displayName={dashboard.profile.full_name}
+            email={dashboard.profile.email}
+            size="md"
+          />
+          <div>
+            <h2 className="text-lg font-semibold text-oxford">
+              Профиль волонтёра
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted">
+              {displayName(dashboard)} · {dashboard.profile.email}
+            </p>
+          </div>
         </div>
         <StatusBadge tone={getVolunteerStatusTone(volunteer.status)}>
           {getVolunteerStatusLabel(volunteer.status)}
@@ -226,21 +237,33 @@ export default async function AppDashboardPage() {
       {!volunteer ? (
         <div className="grid gap-6">
           <section className="rounded-lg border border-oxford/10 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-oxford">Аккаунт</h2>
-            <dl className="mt-5 grid gap-4 text-sm md:grid-cols-3">
-              <div>
-                <dt className="font-semibold text-oxford">Имя</dt>
-                <dd className="mt-1 text-muted">{displayName(dashboard)}</dd>
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+              <ProfileAvatarPreview
+                avatarUrl={dashboard.profile.avatarUrl}
+                displayName={dashboard.profile.full_name}
+                email={dashboard.profile.email}
+                size="md"
+              />
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg font-semibold text-oxford">Аккаунт</h2>
+                <dl className="mt-5 grid gap-4 text-sm md:grid-cols-3">
+                  <div>
+                    <dt className="font-semibold text-oxford">Имя</dt>
+                    <dd className="mt-1 text-muted">{displayName(dashboard)}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold text-oxford">Email</dt>
+                    <dd className="mt-1 text-muted">{dashboard.profile.email}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold text-oxford">Роль</dt>
+                    <dd className="mt-1 text-muted">
+                      {getRoleLabel(dashboard.profile.role)}
+                    </dd>
+                  </div>
+                </dl>
               </div>
-              <div>
-                <dt className="font-semibold text-oxford">Email</dt>
-                <dd className="mt-1 text-muted">{dashboard.profile.email}</dd>
-              </div>
-              <div>
-                <dt className="font-semibold text-oxford">Роль</dt>
-                <dd className="mt-1 text-muted">{getRoleLabel(dashboard.profile.role)}</dd>
-              </div>
-            </dl>
+            </div>
           </section>
 
           <EmptyState

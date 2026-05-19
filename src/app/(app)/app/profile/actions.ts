@@ -5,6 +5,11 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireCurrentUser } from "@/lib/auth/current-user";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  buildAvatarPath,
+  PROFILE_AVATARS_BUCKET,
+  validateAvatarFile
+} from "@/lib/storage/avatars";
 import { profileUpdateSchema } from "@/lib/validations/profile";
 
 const passwordUpdateSchema = z
@@ -97,4 +102,82 @@ export async function updatePassword(formData: FormData) {
   }
 
   redirectWithResult("success", "Пароль обновлён.");
+}
+
+export async function uploadAvatar(formData: FormData) {
+  const currentUser = await requireCurrentUser();
+  const file = formData.get("avatar");
+  const avatarFile = file instanceof File ? file : null;
+  const validationMessage = validateAvatarFile(avatarFile);
+
+  if (validationMessage || !avatarFile) {
+    redirectWithResult(
+      "error",
+      validationMessage ?? "Выберите файл фото профиля."
+    );
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const profileId = currentUser.profile?.id ?? currentUser.user.id;
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, avatar_path")
+    .eq("id", profileId)
+    .maybeSingle();
+
+  if (profileError || !profile) {
+    redirectWithResult(
+      "error",
+      "Не удалось проверить профиль перед загрузкой фото."
+    );
+  }
+
+  const profileRow = profile as {
+    avatar_path: string | null;
+    id: string;
+  };
+  const filePath = buildAvatarPath(profileId, avatarFile);
+  const fileBuffer = Buffer.from(await avatarFile.arrayBuffer());
+  const { error: uploadError } = await supabase.storage
+    .from(PROFILE_AVATARS_BUCKET)
+    .upload(filePath, fileBuffer, {
+      contentType: avatarFile.type,
+      upsert: false
+    });
+
+  if (uploadError) {
+    console.error("Profile avatar upload failed", uploadError);
+    redirectWithResult("error", "Не удалось загрузить фото профиля.");
+  }
+
+  const { data: updatedProfile, error: updateError } = await supabase
+    .from("profiles")
+    .update({
+      avatar_path: filePath,
+      avatar_file_name: avatarFile.name,
+      avatar_file_size_bytes: avatarFile.size,
+      avatar_mime_type: avatarFile.type,
+      avatar_uploaded_at: new Date().toISOString()
+    })
+    .eq("id", profileId)
+    .select("id")
+    .maybeSingle();
+
+  if (updateError || !updatedProfile) {
+    console.error("Profile avatar metadata update failed", updateError);
+    await supabase.storage.from(PROFILE_AVATARS_BUCKET).remove([filePath]);
+    redirectWithResult(
+      "error",
+      "Фото загружено, но не удалось сохранить данные профиля."
+    );
+  }
+
+  if (profileRow.avatar_path && profileRow.avatar_path !== filePath) {
+    await supabase.storage.from(PROFILE_AVATARS_BUCKET).remove([profileRow.avatar_path]);
+  }
+
+  revalidatePath("/app");
+  revalidatePath("/app/profile");
+  revalidatePath("/admin/volunteers");
+  redirectWithResult("success", "Фото профиля обновлено.");
 }

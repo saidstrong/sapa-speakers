@@ -1,4 +1,5 @@
 import { PasswordUpdateForm } from "@/components/auth/password-update-form";
+import { AvatarUploadForm } from "@/components/profile/avatar-upload-form";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -10,7 +11,8 @@ import {
   type VolunteerStatus
 } from "@/lib/queries/volunteers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { updatePassword, updateProfile } from "./actions";
+import { createAvatarSignedUrl } from "@/lib/storage/avatars";
+import { updatePassword, updateProfile, uploadAvatar } from "./actions";
 
 type ProfilePageProps = {
   searchParams?: Promise<{
@@ -24,6 +26,8 @@ type CurrentVolunteerRow = {
   joined_at: string;
   status: string;
 };
+
+type SupabaseServerClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 
 function formatDate(value: string | null) {
   if (!value) {
@@ -83,8 +87,10 @@ function Section({
   );
 }
 
-async function loadCurrentVolunteer(profileId: string) {
-  const supabase = await createSupabaseServerClient();
+async function loadCurrentVolunteer(
+  supabase: SupabaseServerClient,
+  profileId: string
+) {
   const { data, error } = await supabase
     .from("volunteers")
     .select("id, status, joined_at")
@@ -102,8 +108,14 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const currentUser = await requireCurrentUser();
   const result = await searchParams;
   const profileId = currentUser.profile?.id ?? currentUser.user.id;
-  const volunteer = await loadCurrentVolunteer(profileId);
+  const supabase = await createSupabaseServerClient();
+  const [volunteer, avatarUrl] = await Promise.all([
+    loadCurrentVolunteer(supabase, profileId),
+    createAvatarSignedUrl(supabase, currentUser.profile?.avatar_path)
+  ]);
   const profile = {
+    avatar_file_name: currentUser.profile?.avatar_file_name ?? null,
+    avatar_uploaded_at: currentUser.profile?.avatar_uploaded_at ?? null,
     created_at: currentUser.profile?.created_at ?? currentUser.user.created_at ?? null,
     email: currentUser.profile?.email ?? currentUser.user.email ?? "Email не указан",
     full_name: currentUser.profile?.full_name ?? null,
@@ -132,6 +144,20 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
       ) : null}
 
       <div className="grid gap-6">
+        <Section
+          title="Фото профиля"
+          description="Фото хранится в приватном хранилище и используется только внутри личного кабинета и админ-панели."
+        >
+          <AvatarUploadForm
+            action={uploadAvatar}
+            avatarUrl={avatarUrl}
+            displayName={profile.full_name}
+            email={profile.email}
+            fileName={profile.avatar_file_name}
+            uploadedAt={profile.avatar_uploaded_at}
+          />
+        </Section>
+
         <Section
           title="Аккаунт"
           description="Основные данные профиля. Email и роль показаны только для просмотра."

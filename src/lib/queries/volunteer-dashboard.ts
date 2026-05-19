@@ -1,9 +1,11 @@
 import { requireCurrentUser } from "@/lib/auth/current-user";
 import type { RoleKey } from "@/lib/auth/roles";
+import { createAvatarSignedUrl } from "@/lib/storage/avatars";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type VolunteerDashboardProfile = {
   id: string;
+  avatarUrl: string | null;
   email: string;
   full_name: string | null;
   role: RoleKey;
@@ -262,8 +264,13 @@ export async function getVolunteerDashboardData(): Promise<VolunteerDashboardDat
   const currentUser = await requireCurrentUser();
   const supabase = await createSupabaseServerClient();
   const profileId = currentUser.profile?.id ?? currentUser.user.id;
+  const avatarUrl = await createAvatarSignedUrl(
+    supabase,
+    currentUser.profile?.avatar_path
+  );
   const profile: VolunteerDashboardProfile = {
     id: profileId,
+    avatarUrl,
     email: currentUser.profile?.email ?? currentUser.user.email ?? "Email не указан",
     full_name: currentUser.profile?.full_name ?? null,
     role: currentUser.role

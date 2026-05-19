@@ -17,6 +17,11 @@ export type VolunteerProfile = {
   full_name: string | null;
   phone: string | null;
   telegram: string | null;
+  avatar_path: string | null;
+  avatar_file_name: string | null;
+  avatar_file_size_bytes: number | null;
+  avatar_mime_type: string | null;
+  avatar_uploaded_at: string | null;
   role: RoleKey;
 };
 
@@ -65,8 +70,16 @@ type ProfileRow = {
   full_name: string | null;
   phone: string | null;
   telegram: string | null;
+  avatar_path: string | null;
+  avatar_file_name: string | null;
+  avatar_file_size_bytes: number | null;
+  avatar_mime_type: string | null;
+  avatar_uploaded_at: string | null;
   role: string;
 };
+
+const volunteerProfileFields =
+  "id, email, full_name, phone, telegram, avatar_path, avatar_file_name, avatar_file_size_bytes, avatar_mime_type, avatar_uploaded_at, role";
 
 function isVolunteerStatus(value: string): value is VolunteerStatus {
   return volunteerStatuses.includes(value as VolunteerStatus);
@@ -118,7 +131,7 @@ export async function listVolunteers(): Promise<VolunteerListItem[]> {
   const [profilesResult, applicationsResult] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, email, full_name, phone, telegram, role")
+      .select(volunteerProfileFields)
       .in("id", profileIds),
     applicationIds.length > 0
       ? supabase
@@ -180,7 +193,7 @@ export async function getVolunteerDetail(id: string): Promise<VolunteerDetail> {
   const [profileResult, applicationResult] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, email, full_name, phone, telegram, role")
+      .select(volunteerProfileFields)
       .eq("id", volunteer.profile_id)
       .maybeSingle(),
     volunteer.application_id

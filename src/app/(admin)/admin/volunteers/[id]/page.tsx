@@ -6,6 +6,7 @@ import { CertificateForm } from "@/components/certificates/certificate-form";
 import { CertificatesTable } from "@/components/certificates/certificates-table";
 import { ContributionHistoryTable } from "@/components/contributions/contribution-history-table";
 import { ContributionSummaryCard } from "@/components/contributions/contribution-summary-card";
+import { ProfileAvatarPreview } from "@/components/profile/avatar-upload-form";
 import { PageHeader } from "@/components/ui/page-header";
 import {
   VolunteerStatusBadge,
@@ -16,6 +17,8 @@ import { listVolunteerAchievementsForAdmin } from "@/lib/queries/achievements";
 import { listVolunteerCertificatesForAdmin } from "@/lib/queries/certificates";
 import { getVolunteerContributionHistoryForAdmin } from "@/lib/queries/contributions";
 import { getVolunteerDetail, volunteerStatuses } from "@/lib/queries/volunteers";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createAvatarSignedUrl } from "@/lib/storage/avatars";
 import { awardAchievement } from "./achievement-actions";
 import { issueCertificate } from "./certificate-actions";
 import { updateVolunteer } from "./actions";
@@ -86,6 +89,12 @@ export default async function VolunteerDetailPage({
   const achievementAction = awardAchievement.bind(null, volunteer.id);
   const certificateAction = issueCertificate.bind(null, volunteer.id);
   const updateAction = updateVolunteer.bind(null, volunteer.id);
+  const avatarUrl = volunteer.profile?.avatar_path
+    ? await createAvatarSignedUrl(
+        await createSupabaseServerClient(),
+        volunteer.profile.avatar_path
+      )
+    : null;
 
   return (
     <>
@@ -116,16 +125,24 @@ export default async function VolunteerDetailPage({
 
       <div className="grid gap-6">
         <Section title="Профиль">
-          <dl className="grid gap-5 md:grid-cols-2">
-            <DetailItem label="ФИО" value={volunteer.profile?.full_name} />
-            <DetailItem label="Email" value={volunteer.profile?.email} />
-            <DetailItem label="Телефон" value={volunteer.profile?.phone} />
-            <DetailItem label="Telegram" value={volunteer.profile?.telegram} />
-            <DetailItem
-              label="Роль профиля"
-              value={volunteer.profile ? getRoleLabel(volunteer.profile.role) : null}
+          <div className="flex flex-col gap-5 md:flex-row md:items-start">
+            <ProfileAvatarPreview
+              avatarUrl={avatarUrl}
+              displayName={volunteer.profile?.full_name}
+              email={volunteer.profile?.email}
+              size="lg"
             />
-          </dl>
+            <dl className="grid flex-1 gap-5 md:grid-cols-2">
+              <DetailItem label="ФИО" value={volunteer.profile?.full_name} />
+              <DetailItem label="Email" value={volunteer.profile?.email} />
+              <DetailItem label="Телефон" value={volunteer.profile?.phone} />
+              <DetailItem label="Telegram" value={volunteer.profile?.telegram} />
+              <DetailItem
+                label="Роль профиля"
+                value={volunteer.profile ? getRoleLabel(volunteer.profile.role) : null}
+              />
+            </dl>
+          </div>
         </Section>
 
         <Section title="Волонтёрская карточка">

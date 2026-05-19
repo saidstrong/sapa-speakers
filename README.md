@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 12B: secure role management UI.
+Phase 12C: avatar/profile photo upload.
 
 This phase includes:
 
@@ -105,8 +105,10 @@ This phase includes:
 - authenticated password change from `/app/profile`
 - secure `/admin/roles` role management for Founder/CEO and CTO
 - role changes written to `public.role_change_logs`
+- private profile avatar uploads for authenticated users
+- avatar previews on profile, volunteer dashboard, and admin volunteer detail pages
 
-Public event pages, certificate PDF generation, QR verification, public certificate verification, automated achievement rules, points, levels, leaderboards, notifications, analytics, exports, rewards, and audit dashboards are intentionally not implemented yet.
+Public volunteer profiles, public event pages, certificate PDF generation, QR verification, public certificate verification, automated achievement rules, points, levels, leaderboards, notifications, analytics, exports, rewards, and audit dashboards are intentionally not implemented yet.
 
 ## Supabase Migration
 
@@ -135,9 +137,10 @@ supabase/migrations/0013_announcements.sql
 supabase/migrations/0014_authenticated_volunteer_applications.sql
 supabase/migrations/0015_certificate_pdf_files.sql
 supabase/migrations/0016_role_management.sql
+supabase/migrations/0017_profile_avatars.sql
 ```
 
-The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, `public.event_attendance`, `public.volunteer_contributions`, `public.certificates`, `public.achievements`, `public.announcements`, and `public.role_change_logs`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance/contribution/certificate/achievement/announcement/role-change data, allow authenticated users to submit pending volunteer applications from the app, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, mark attendance, award contribution hours, issue certificate records, upload official certificate PDFs when their role is authorized, award achievement records, manage announcements, and manage roles through a secure RPC when their role is Founder/CEO or CTO, allow authenticated volunteers to view only published events and announcements, and allow active volunteers to manage and view their own event registration, contribution history, certificate records, certificate PDF downloads, and achievement records. Profile self-update is limited to safe contact columns; role updates are handled by `public.update_profile_role(...)` and are logged.
+The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, `public.event_attendance`, `public.volunteer_contributions`, `public.certificates`, `public.achievements`, `public.announcements`, and `public.role_change_logs`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance/contribution/certificate/achievement/announcement/role-change data, allow authenticated users to submit pending volunteer applications from the app, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, mark attendance, award contribution hours, issue certificate records, upload official certificate PDFs when their role is authorized, award achievement records, manage announcements, and manage roles through a secure RPC when their role is Founder/CEO or CTO, allow authenticated volunteers to view only published events and announcements, and allow active volunteers to manage and view their own event registration, contribution history, certificate records, certificate PDF downloads, and achievement records. Profile self-update is limited to safe contact and own-avatar columns; role updates are handled by `public.update_profile_role(...)` and are logged.
 
 ## Auth Setup Notes
 
@@ -446,9 +449,9 @@ Phase 9A makes the volunteer profile page a real authenticated account surface:
 http://localhost:3000/app/profile
 ```
 
-Users can view their email, role, contact fields, account creation date, and volunteer card status when one exists. They can safely update basic contact fields: full name, phone, and Telegram. They can also change the password for the currently signed-in Supabase Auth account.
+Users can view their email, role, contact fields, account creation date, current avatar, and volunteer card status when one exists. They can safely update basic contact fields: full name, phone, and Telegram. They can also change the password for the currently signed-in Supabase Auth account.
 
-Email changes, role editing, volunteer status changes, avatar/storage features, and notification preferences are intentionally deferred.
+Email changes, role editing, volunteer status changes, public profile photos, and notification preferences are intentionally deferred.
 
 ## Internal Announcements
 
@@ -538,6 +541,18 @@ Only Founder/CEO and CTO accounts can submit role changes. The UI blocks self-ro
 Role changes go through `public.update_profile_role(target_profile_id, new_role, reason)`, a security-definer RPC that validates the actor, target, requested role, Founder/CEO protections, and reason length before updating `public.profiles.role`. Every actual role change is written to `public.role_change_logs`.
 
 This phase does not add user deletion, admin password reset, invites, custom roles, detailed permission editing, or notifications.
+
+## Profile Avatars
+
+Phase 12C adds private profile avatar uploads from:
+
+```text
+http://localhost:3000/app/profile
+```
+
+Authenticated users can upload JPG, PNG, or WebP files up to 5 MB. Files are stored in the private `profile-avatars` Supabase Storage bucket under the user's own profile folder, and profile metadata is written only to that user's `public.profiles` row. The UI uses signed URLs for previewing avatars in the profile page, volunteer dashboard, and admin volunteer detail page.
+
+Anonymous users cannot access avatar files. Admins can view avatars inside admin volunteer surfaces, but this phase does not add public volunteer profiles, cropping, moderation, image transformations, or notification workflows.
 
 ## Phase 2B Manual QA Checklist
 

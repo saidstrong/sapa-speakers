@@ -11,6 +11,11 @@ export type CurrentUserProfile = {
   full_name: string | null;
   phone: string | null;
   telegram: string | null;
+  avatar_path: string | null;
+  avatar_file_name: string | null;
+  avatar_file_size_bytes: number | null;
+  avatar_mime_type: string | null;
+  avatar_uploaded_at: string | null;
   role: RoleKey;
   created_at: string | null;
   updated_at: string | null;
@@ -50,7 +55,9 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, email, full_name, phone, telegram, role, created_at, updated_at")
+    .select(
+      "id, email, full_name, phone, telegram, avatar_path, avatar_file_name, avatar_file_size_bytes, avatar_mime_type, avatar_uploaded_at, role, created_at, updated_at"
+    )
     .eq("id", user.id)
     .maybeSingle();
 
@@ -66,6 +73,11 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
           full_name: data.full_name,
           phone: data.phone,
           telegram: data.telegram,
+          avatar_path: data.avatar_path,
+          avatar_file_name: data.avatar_file_name,
+          avatar_file_size_bytes: data.avatar_file_size_bytes,
+          avatar_mime_type: data.avatar_mime_type,
+          avatar_uploaded_at: data.avatar_uploaded_at,
           role,
           created_at: data.created_at,
           updated_at: data.updated_at
