@@ -100,7 +100,7 @@ This phase includes:
 - state-aware `/app/join` handling for pending/non-active users, active volunteers, and admins
 - clearer public project navigation and volunteer account pending state copy
 - auth-first volunteer application flow through `/app/join`
-- official Instagram contact link and no placeholder WhatsApp/Telegram contact data
+- official Instagram, Telegram, and WhatsApp contact links
 
 Role assignment UI, public event pages, certificate PDF generation, QR verification, public certificate verification, automated achievement rules, points, levels, leaderboards, notifications, analytics, exports, rewards, and audit logs are intentionally not implemented yet.
 
@@ -473,7 +473,7 @@ http://localhost:3000/app/join
 
 The authenticated application action uses the current user's profile email when available and inserts a pending volunteer application through authenticated RLS. Anonymous users no longer receive insert access to `public.volunteer_applications`.
 
-This phase also adds the official Instagram contact link and keeps WhatsApp/Telegram marked as pending team approval. Notifications and application self-status are still intentionally deferred.
+This phase also adds official Instagram, Telegram, and WhatsApp contact links. Notifications and application self-status are still intentionally deferred.
 
 ## Official Certificate PDF Files
 
