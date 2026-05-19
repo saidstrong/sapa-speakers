@@ -30,9 +30,18 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-5 py-10">
       <PageHeader title={RU.pages.login.title} description={RU.pages.login.description} />
-      {params?.status === "error" ? (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
-          {params.message ?? "Не удалось войти. Попробуйте ещё раз."}
+      {params?.status ? (
+        <div
+          className={
+            params.status === "success"
+              ? "mb-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-medium text-green-700"
+              : "mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700"
+          }
+        >
+          {params.message ??
+            (params.status === "success"
+              ? "Операция выполнена."
+              : "Не удалось войти. Попробуйте ещё раз.")}
         </div>
       ) : null}
       <form action={login} className="space-y-5 rounded-lg border border-oxford/10 bg-white p-6 shadow-sm">
@@ -67,6 +76,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           href="/register"
         >
           {RU.buttons.register}
+        </Link>
+        <Link
+          className="block text-center text-sm font-medium text-muted underline-offset-4 hover:text-oxford hover:underline"
+          href="/forgot-password"
+        >
+          Забыли пароль?
         </Link>
       </form>
     </main>

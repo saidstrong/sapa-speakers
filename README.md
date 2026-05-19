@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 10F: official certificate PDF upload/download.
+Phase 12A: password reset and password change UI.
 
 This phase includes:
 
@@ -101,6 +101,8 @@ This phase includes:
 - clearer public project navigation and volunteer account pending state copy
 - auth-first volunteer application flow through `/app/join`
 - official Instagram, Telegram, and WhatsApp contact links
+- password reset request and recovery password update through Supabase Auth
+- authenticated password change from `/app/profile`
 
 Role assignment UI, public event pages, certificate PDF generation, QR verification, public certificate verification, automated achievement rules, points, levels, leaderboards, notifications, analytics, exports, rewards, and audit logs are intentionally not implemented yet.
 
@@ -141,6 +143,15 @@ In Supabase Auth settings, set the local site URL to:
 ```text
 http://localhost:3000
 ```
+
+Add password recovery redirect URLs for local and production environments:
+
+```text
+http://localhost:3000/reset-password
+https://sapa-speakers.vercel.app/reset-password
+```
+
+Set `NEXT_PUBLIC_APP_URL` to the current app origin so reset emails point to the correct `/reset-password` route.
 
 New auth users get a `public.profiles` row from the database trigger in `0002_profiles_volunteers.sql`. The default role is `volunteer`. A `public.volunteers` row is not created at registration time; Phase 2A creates it only when an admin approves a public volunteer application and a matching profile exists.
 
@@ -432,9 +443,9 @@ Phase 9A makes the volunteer profile page a real authenticated account surface:
 http://localhost:3000/app/profile
 ```
 
-Users can view their email, role, contact fields, account creation date, and volunteer card status when one exists. They can safely update only basic contact fields: full name, phone, and Telegram.
+Users can view their email, role, contact fields, account creation date, and volunteer card status when one exists. They can safely update basic contact fields: full name, phone, and Telegram. They can also change the password for the currently signed-in Supabase Auth account.
 
-Email changes, role editing, volunteer status changes, avatar/storage features, notification preferences, and password settings are intentionally deferred.
+Email changes, role editing, volunteer status changes, avatar/storage features, and notification preferences are intentionally deferred.
 
 ## Internal Announcements
 
@@ -492,6 +503,24 @@ http://localhost:3000/app/certificates
 ```
 
 Revoked certificates stay visible as revoked records, but volunteer PDF download is hidden for revoked certificates. Public certificate verification, QR codes, PDF generation, templates, notifications, and public download pages are still deferred.
+
+## Password Reset And Password Change
+
+Phase 12A adds Supabase Auth password recovery and password change UI without custom password storage, schema changes, or RLS changes.
+
+Anonymous users can request a recovery email from:
+
+```text
+http://localhost:3000/forgot-password
+```
+
+The reset link returns users to:
+
+```text
+http://localhost:3000/reset-password
+```
+
+The reset route exchanges the Supabase recovery code into a server-side session, lets the user set a new password, signs the recovery session out, and sends the user back to `/login` with a success message. Authenticated users can change their current account password from `/app/profile`.
 
 ## Phase 2B Manual QA Checklist
 

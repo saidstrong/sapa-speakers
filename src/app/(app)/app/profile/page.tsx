@@ -1,3 +1,4 @@
+import { PasswordUpdateForm } from "@/components/auth/password-update-form";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -9,7 +10,7 @@ import {
   type VolunteerStatus
 } from "@/lib/queries/volunteers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { updateProfile } from "./actions";
+import { updatePassword, updateProfile } from "./actions";
 
 type ProfilePageProps = {
   searchParams?: Promise<{
@@ -153,6 +154,17 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
           description="Можно обновить только ФИО, телефон и Telegram. Остальные поля управляются отдельными процессами."
         >
           <ProfileForm action={updateProfile} profile={profile} />
+        </Section>
+
+        <Section
+          title="Пароль"
+          description="Эта форма обновляет пароль текущего аккаунта, в который вы уже вошли."
+        >
+          <PasswordUpdateForm
+            action={updatePassword}
+            helperText="Старый пароль не требуется, потому что сессия уже подтверждена."
+            submitLabel="Сменить пароль"
+          />
         </Section>
 
         <Section
