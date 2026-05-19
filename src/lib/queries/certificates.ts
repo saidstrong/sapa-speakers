@@ -20,6 +20,12 @@ export type CertificateRecord = {
   issued_at: string;
   revoked_at: string | null;
   revocation_reason: string | null;
+  file_path: string | null;
+  file_name: string | null;
+  file_size_bytes: number | null;
+  file_mime_type: string | null;
+  file_uploaded_by: string | null;
+  file_uploaded_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -37,6 +43,7 @@ export type CertificateProfile = {
 };
 
 export type CertificateListItem = CertificateRecord & {
+  fileUploadedByProfile: CertificateProfile | null;
   issuedByProfile: CertificateProfile | null;
   volunteer: CertificateVolunteer | null;
   volunteerProfile: CertificateProfile | null;
@@ -71,7 +78,7 @@ type CertificateVolunteerRow = CertificateVolunteer;
 type CertificateProfileRow = CertificateProfile;
 
 const certificateFields =
-  "id, volunteer_id, title, description, certificate_type, status, issued_by, issued_at, revoked_at, revocation_reason, created_at, updated_at";
+  "id, volunteer_id, title, description, certificate_type, status, issued_by, issued_at, revoked_at, revocation_reason, file_path, file_name, file_size_bytes, file_mime_type, file_uploaded_by, file_uploaded_at, created_at, updated_at";
 
 function isCertificateType(value: string): value is CertificateType {
   return certificateTypes.includes(value as CertificateType);
@@ -104,7 +111,10 @@ async function hydrateCertificates(
   }
 
   const volunteerIds = uniqueValues(certificates.map((certificate) => certificate.volunteer_id));
-  const issuerIds = uniqueValues(certificates.map((certificate) => certificate.issued_by));
+  const profileReferenceIds = uniqueValues([
+    ...certificates.map((certificate) => certificate.issued_by),
+    ...certificates.map((certificate) => certificate.file_uploaded_by)
+  ]);
 
   const { data: volunteerRows, error: volunteersError } = await supabase
     .from("volunteers")
@@ -119,7 +129,7 @@ async function hydrateCertificates(
   const volunteersById = new Map(volunteers.map((volunteer) => [volunteer.id, volunteer]));
   const profileIds = uniqueValues([
     ...volunteers.map((volunteer) => volunteer.profile_id),
-    ...issuerIds
+    ...profileReferenceIds
   ]);
 
   const { data: profileRows, error: profilesError } =
@@ -148,6 +158,9 @@ async function hydrateCertificates(
       ...certificate,
       issuedByProfile: certificate.issued_by
         ? profilesById.get(certificate.issued_by) ?? null
+        : null,
+      fileUploadedByProfile: certificate.file_uploaded_by
+        ? profilesById.get(certificate.file_uploaded_by) ?? null
         : null,
       volunteer,
       volunteerProfile: volunteer

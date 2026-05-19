@@ -9,6 +9,10 @@ export const certificateTypes = [
 
 export const certificateStatuses = ["issued", "revoked"] as const;
 
+export const certificatePdfMimeType = "application/pdf";
+
+export const certificatePdfMaxSizeBytes = 10 * 1024 * 1024;
+
 export type CertificateType = (typeof certificateTypes)[number];
 
 export type CertificateStatus = (typeof certificateStatuses)[number];

@@ -6,6 +6,7 @@ import type { CertificateListItem } from "@/lib/queries/certificates";
 
 type CertificatesTableProps = {
   certificates: readonly CertificateListItem[];
+  downloadAction?: (certificateId: string) => Promise<void>;
   emptyDescription: string;
   emptyTitle?: string;
   detailBasePath?: string;
@@ -37,6 +38,7 @@ function displayProfile(profile: CertificateListItem["volunteerProfile"]) {
 export function CertificatesTable({
   certificates,
   detailBasePath,
+  downloadAction,
   emptyDescription,
   emptyTitle = "Сертификаты",
   showDetailAction = false,
@@ -56,7 +58,7 @@ export function CertificatesTable({
   return (
     <div className="overflow-hidden rounded-lg border border-oxford/10 bg-white shadow-sm">
       <div className="overflow-x-auto">
-        <table className="min-w-[860px] divide-y divide-oxford/10 text-sm">
+        <table className="min-w-[980px] divide-y divide-oxford/10 text-sm">
           <thead className="bg-oxford/5 text-left text-xs font-semibold uppercase text-muted">
             <tr>
               <th className="px-4 py-3">Название</th>
@@ -69,6 +71,7 @@ export function CertificatesTable({
               ) : null}
               {showIssuer ? <th className="px-4 py-3">Выдал</th> : null}
               <th className="px-4 py-3">Описание</th>
+              <th className="px-4 py-3">PDF</th>
               {showDetailAction && detailBasePath ? (
                 <th className="px-4 py-3">Действие</th>
               ) : null}
@@ -139,6 +142,26 @@ export function CertificatesTable({
                 ) : null}
                 <td className="max-w-md px-4 py-4 text-muted">
                   {certificate.description ?? "Нет"}
+                </td>
+                <td className="px-4 py-4">
+                  {certificate.file_path && certificate.status === "issued" ? (
+                    downloadAction ? (
+                      <form action={downloadAction.bind(null, certificate.id)}>
+                        <button
+                          className="rounded-md border border-oxford/15 px-3 py-2 text-sm font-semibold text-oxford transition hover:border-orange/40 hover:text-orange"
+                          type="submit"
+                        >
+                          Скачать PDF
+                        </button>
+                      </form>
+                    ) : (
+                      <span className="text-sm text-muted">PDF прикреплён</span>
+                    )
+                  ) : certificate.status === "revoked" ? (
+                    <span className="text-sm text-muted">Сертификат отозван</span>
+                  ) : (
+                    <span className="text-sm text-muted">PDF ещё не прикреплён.</span>
+                  )}
                 </td>
                 {showDetailAction && detailBasePath ? (
                   <td className="px-4 py-4">

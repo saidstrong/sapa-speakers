@@ -9,7 +9,7 @@ export default async function AdminCertificatesPage() {
     <>
       <PageHeader
         title="Сертификаты"
-        description="Реестр выданных сертификатов. PDF-файлы, шаблоны и QR-проверка будут добавлены позже."
+        description="Реестр выданных сертификатов и прикреплённых официальных PDF. Шаблоны и QR-проверка будут добавлены позже."
       />
 
       <CertificatesTable

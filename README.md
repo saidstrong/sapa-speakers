@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 10E: auth-first join flow and contact polish.
+Phase 10F: official certificate PDF upload/download.
 
 This phase includes:
 
@@ -81,6 +81,9 @@ This phase includes:
 - admin certificate detail pages
 - certificate revocation with a recorded reason
 - revoked certificate status visible to volunteers
+- private official certificate PDF files in Supabase Storage
+- authorized organization roles can upload or replace official certificate PDFs
+- volunteers can download their own issued certificate PDFs
 - achievement records for volunteers
 - admin achievement awarding from volunteer detail pages
 - admin and volunteer achievement record views
@@ -99,7 +102,7 @@ This phase includes:
 - auth-first volunteer application flow through `/app/join`
 - official Instagram contact link and no placeholder WhatsApp/Telegram contact data
 
-Role assignment UI, public event pages, certificate PDF generation, certificate storage, QR verification, public certificate verification, automated achievement rules, points, levels, leaderboards, notifications, analytics, exports, rewards, and audit logs are intentionally not implemented yet.
+Role assignment UI, public event pages, certificate PDF generation, QR verification, public certificate verification, automated achievement rules, points, levels, leaderboards, notifications, analytics, exports, rewards, and audit logs are intentionally not implemented yet.
 
 ## Supabase Migration
 
@@ -126,9 +129,10 @@ supabase/migrations/0011_achievements.sql
 supabase/migrations/0012_profile_self_update.sql
 supabase/migrations/0013_announcements.sql
 supabase/migrations/0014_authenticated_volunteer_applications.sql
+supabase/migrations/0015_certificate_pdf_files.sql
 ```
 
-The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, `public.event_attendance`, `public.volunteer_contributions`, `public.certificates`, `public.achievements`, and `public.announcements`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance/contribution/certificate/achievement/announcement data, allow authenticated users to submit pending volunteer applications from the app, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, mark attendance, award contribution hours, issue certificate records, award achievement records, and manage announcements, allow authenticated volunteers to view only published events and announcements, and allow active volunteers to manage and view their own event registration, contribution history, certificate records, and achievement records. Profile self-update is limited to safe contact columns.
+The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, `public.event_attendance`, `public.volunteer_contributions`, `public.certificates`, `public.achievements`, and `public.announcements`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance/contribution/certificate/achievement/announcement data, allow authenticated users to submit pending volunteer applications from the app, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, mark attendance, award contribution hours, issue certificate records, upload official certificate PDFs when their role is authorized, award achievement records, and manage announcements, allow authenticated volunteers to view only published events and announcements, and allow active volunteers to manage and view their own event registration, contribution history, certificate records, certificate PDF downloads, and achievement records. Profile self-update is limited to safe contact columns.
 
 ## Auth Setup Notes
 
@@ -326,7 +330,7 @@ Phase 6A lets admin-capable users issue simple certificate records from:
 http://localhost:3000/admin/volunteers/[id]
 ```
 
-Admins can enter a title, certificate type, and optional description. The record is stored as `issued` and linked to the volunteer and issuing admin profile. No PDF is generated in this phase.
+Admins can enter a title, certificate type, and optional description. The record is stored as `issued` and linked to the volunteer and issuing admin profile. No PDF is generated automatically in this phase.
 
 Admins can view all certificate records at:
 
@@ -340,7 +344,7 @@ Volunteers can view their own certificates at:
 http://localhost:3000/app/certificates
 ```
 
-PDF generation, Supabase Storage, certificate templates/images, QR verification, public verification pages, automated issuing rules, emails, achievements, and analytics are intentionally deferred.
+PDF generation, certificate templates/images, QR verification, public verification pages, automated issuing rules, emails, achievements, and analytics are intentionally deferred.
 
 ## Managing Certificate Records
 
@@ -354,7 +358,7 @@ Admins can inspect certificate metadata, issuing context, linked volunteer detai
 
 Volunteers see revoked certificates clearly in their own certificate list, including revocation date and reason when available.
 
-PDF generation, Supabase Storage, QR verification, public certificate verification pages, templates/images, automated issuing rules, emails, achievements, and analytics are still deferred.
+PDF generation, QR verification, public certificate verification pages, templates/images, automated issuing rules, emails, achievements, and analytics are still deferred.
 
 ## Awarding Achievement Records
 
@@ -469,7 +473,25 @@ http://localhost:3000/app/join
 
 The authenticated application action uses the current user's profile email when available and inserts a pending volunteer application through authenticated RLS. Anonymous users no longer receive insert access to `public.volunteer_applications`.
 
-This phase also adds the official Instagram contact link and keeps WhatsApp/Telegram marked as pending team approval. Certificate PDF upload, storage buckets, certificate file fields, notifications, and application self-status are still intentionally deferred.
+This phase also adds the official Instagram contact link and keeps WhatsApp/Telegram marked as pending team approval. Notifications and application self-status are still intentionally deferred.
+
+## Official Certificate PDF Files
+
+Phase 10F adds private official certificate PDF storage. Authorized organization roles can upload or replace a PDF from the admin certificate detail page:
+
+```text
+http://localhost:3000/admin/certificates/[id]
+```
+
+Authorized uploader roles are Founder/CEO, CTO, Operations Manager, HR Manager, and Volunteer Teamlead. Files are stored in the private `certificate-files` Supabase Storage bucket, limited to PDF files up to 10 MB, and linked to nullable metadata columns on `public.certificates`.
+
+Volunteers can download their own issued certificate PDFs from:
+
+```text
+http://localhost:3000/app/certificates
+```
+
+Revoked certificates stay visible as revoked records, but volunteer PDF download is hidden for revoked certificates. Public certificate verification, QR codes, PDF generation, templates, notifications, and public download pages are still deferred.
 
 ## Phase 2B Manual QA Checklist
 
