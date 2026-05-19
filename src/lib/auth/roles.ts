@@ -26,6 +26,7 @@ export type RoleDefinition = {
 };
 
 export const protectedRoleKeys = ["founder_ceo", "cto"] as const satisfies readonly RoleKey[];
+export const roleManagerRoleKeys = ["founder_ceo", "cto"] as const satisfies readonly RoleKey[];
 
 export const adminRoleKeys = roleKeys.filter(
   (role) => role !== "volunteer"
@@ -118,4 +119,40 @@ export function isRoleKey(value: unknown): value is RoleKey {
 
 export function isAdminRole(role: RoleKey | null | undefined) {
   return Boolean(role && adminRoleKeys.includes(role as Exclude<RoleKey, "volunteer">));
+}
+
+export function canManageRoles(role: RoleKey | null | undefined) {
+  return Boolean(role && roleManagerRoleKeys.includes(role as (typeof roleManagerRoleKeys)[number]));
+}
+
+export function getAssignableRoleKeys(actorRole: RoleKey) {
+  return actorRole === "founder_ceo"
+    ? roleKeys
+    : roleKeys.filter((role) => role !== "founder_ceo");
+}
+
+export function canManageTargetRole({
+  actorProfileId,
+  actorRole,
+  targetProfileId,
+  targetRole
+}: {
+  actorProfileId: string;
+  actorRole: RoleKey;
+  targetProfileId: string;
+  targetRole: RoleKey;
+}) {
+  if (!canManageRoles(actorRole)) {
+    return false;
+  }
+
+  if (actorProfileId === targetProfileId) {
+    return false;
+  }
+
+  if (targetRole === "founder_ceo" && actorRole !== "founder_ceo") {
+    return false;
+  }
+
+  return true;
 }

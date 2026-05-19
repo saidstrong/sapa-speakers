@@ -40,7 +40,7 @@ Do not move or rewrite those files without an explicit documentation task.
 
 ## Current Phase
 
-Phase 12A: password reset and password change UI.
+Phase 12B: secure role management UI.
 
 This phase includes:
 
@@ -103,8 +103,10 @@ This phase includes:
 - official Instagram, Telegram, and WhatsApp contact links
 - password reset request and recovery password update through Supabase Auth
 - authenticated password change from `/app/profile`
+- secure `/admin/roles` role management for Founder/CEO and CTO
+- role changes written to `public.role_change_logs`
 
-Role assignment UI, public event pages, certificate PDF generation, QR verification, public certificate verification, automated achievement rules, points, levels, leaderboards, notifications, analytics, exports, rewards, and audit logs are intentionally not implemented yet.
+Public event pages, certificate PDF generation, QR verification, public certificate verification, automated achievement rules, points, levels, leaderboards, notifications, analytics, exports, rewards, and audit dashboards are intentionally not implemented yet.
 
 ## Supabase Migration
 
@@ -132,9 +134,10 @@ supabase/migrations/0012_profile_self_update.sql
 supabase/migrations/0013_announcements.sql
 supabase/migrations/0014_authenticated_volunteer_applications.sql
 supabase/migrations/0015_certificate_pdf_files.sql
+supabase/migrations/0016_role_management.sql
 ```
 
-The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, `public.event_attendance`, `public.volunteer_contributions`, `public.certificates`, `public.achievements`, and `public.announcements`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance/contribution/certificate/achievement/announcement data, allow authenticated users to submit pending volunteer applications from the app, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, mark attendance, award contribution hours, issue certificate records, upload official certificate PDFs when their role is authorized, award achievement records, and manage announcements, allow authenticated volunteers to view only published events and announcements, and allow active volunteers to manage and view their own event registration, contribution history, certificate records, certificate PDF downloads, and achievement records. Profile self-update is limited to safe contact columns.
+The migrations create `public.volunteer_applications`, `public.profiles`, `public.volunteers`, `public.events`, `public.event_registrations`, `public.event_attendance`, `public.volunteer_contributions`, `public.certificates`, `public.achievements`, `public.announcements`, and `public.role_change_logs`, enable RLS, keep anonymous users away from private profile/volunteer/event/attendance/contribution/certificate/achievement/announcement/role-change data, allow authenticated users to submit pending volunteer applications from the app, allow admin-capable authenticated users to review public volunteer applications, manage internal events, view participants, mark attendance, award contribution hours, issue certificate records, upload official certificate PDFs when their role is authorized, award achievement records, manage announcements, and manage roles through a secure RPC when their role is Founder/CEO or CTO, allow authenticated volunteers to view only published events and announcements, and allow active volunteers to manage and view their own event registration, contribution history, certificate records, certificate PDF downloads, and achievement records. Profile self-update is limited to safe contact columns; role updates are handled by `public.update_profile_role(...)` and are logged.
 
 ## Auth Setup Notes
 
@@ -521,6 +524,20 @@ http://localhost:3000/reset-password
 ```
 
 The reset route exchanges the Supabase recovery code into a server-side session, lets the user set a new password, signs the recovery session out, and sends the user back to `/login` with a success message. Authenticated users can change their current account password from `/app/profile`.
+
+## Secure Role Management
+
+Phase 12B adds a protected role management screen:
+
+```text
+http://localhost:3000/admin/roles
+```
+
+Only Founder/CEO and CTO accounts can submit role changes. The UI blocks self-role changes, hides Founder/CEO assignment from CTO, and leaves normal admin roles read-only. Server actions still re-check the actor role before calling the database.
+
+Role changes go through `public.update_profile_role(target_profile_id, new_role, reason)`, a security-definer RPC that validates the actor, target, requested role, Founder/CEO protections, and reason length before updating `public.profiles.role`. Every actual role change is written to `public.role_change_logs`.
+
+This phase does not add user deletion, admin password reset, invites, custom roles, detailed permission editing, or notifications.
 
 ## Phase 2B Manual QA Checklist
 
